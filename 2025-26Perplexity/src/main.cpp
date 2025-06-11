@@ -1,0 +1,248 @@
+#include "main.h"
+#include "Intake.hpp"
+#include "autons.hpp"
+#include "pros/misc.h"
+#include "robodash/api.h" // IWYU pragma: export
+
+/////
+// For installation, upgrading, documentations, and tutorials, check out our
+// website! https://ez-robotics.github.io/EZ-Template/
+/////
+
+// Chassis constructor
+pros::MotorGroup left_motors({ -17, 19, -18 }, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({ -15, 14, 13 }, pros::MotorGearset::blue);
+lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
+                              &right_motors, // right motor group
+                              10.75,         // 10 inch track width
+                              lemlib::Omniwheel::OLD_325,
+                              360, // drivetrain rpm is 360
+                              2    // horizontal drift is 2 (for now)
+);
+// create an imu on port 8
+pros::Imu imu(20);
+pros::Rotation horizontal_encoder(10);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder,
+                                                lemlib::Omniwheel::NEW_275,
+                                                -5.75);
+
+// pros::Rotation vertical_encoder(16);
+
+// lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder,
+//                                               lemlib::Omniwheel::NEW_275,
+//                                               -5.75);
+
+lemlib::OdomSensors sensors(
+    nullptr, // vertical tracking wheel 1, set to null
+    nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
+    &horizontal_tracking_wheel, // horizontal tracking wheel 1
+    nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a
+             // second one
+    &imu     //&imu     // inertial sensor
+);
+// lateral PID controller
+lemlib::ControllerSettings lateral_controller(
+    20,  // proportional gain (kP)
+    0,   // integral gain (kI)
+    80,  // derivative gain (kD)
+    3,   // anti windup
+    1,   // small error range, in inches
+    100, // small error range timeout, in milliseconds
+    3,   // large error range, in inches
+    500, // large error range timeout, in milliseconds
+    20   // maximum acceleration (slew)
+);
+
+// angular PID controller
+lemlib::ControllerSettings angular_controller(
+    4,   // proportional gain (kP)
+    0,   // integral gain (kI)
+    29,  // derivative gain (kD)
+    3,   // anti windup
+    1,   // small error range, in degrees
+    100, // small error range timeout, in milliseconds
+    3,   // large error range, in degrees
+    500, // large error range timeout, in milliseconds
+    0    // maximum acceleration (slew)
+);
+// create the chassis
+lemlib::Chassis chassis(drivetrain,         // drivetrain settings
+                        lateral_controller, // lateral PID settings
+                        angular_controller, // angular PID settings
+                        sensors             // odometry sensors
+);
+pros::MotorGroup intake_mts({ 11 }, // Motors
+                            pros::v5::MotorGears::blue,
+                            pros::v5::MotorUnits::degrees);
+pros::MotorGroup ladyBrown_mts({ -4, 6 }, // Motors
+                               pros::v5::MotorGears::rpm_200,
+                               pros::v5::MotorUnits::degrees);
+// pros::Optical optical(11);
+
+pros::Rotation rot_sensor(2);
+// ColourDetector colourDetector(optical);
+//  AirCylinder intakeEjection('b', false);
+
+pros::Controller master(pros::E_CONTROLLER_MASTER);
+
+
+/**                                                                            \
+ * Runs initialization code. This occurs as soon as the program is started.    \
+ *                                                                             \
+ * All other competition modes are blocked by initialize; it is recommended    \
+ * to keep execution time for this mode under a few seconds.                   \
+autons_back_red autons_back_blue                                               \
+ */
+// rd::Console console;
+rd::Selector selector({ { "auton_skills", auton_skills },
+                        { "autons_positive_red", autons_positive_red },
+                        { "autons_positive_blue", autons_positive_blue },
+                        { "autons_negative_red", autons_negative_red },
+                        { "autons_negative_blue", autons_negative_blue },
+                        { "Auton Touch", autons_touch } });
+
+// #include "liblvgl/lvgl.h"
+// extern const lv_img_dsc_t JestersLogo;
+
+// rd::Image image(&JestersLogo, "Jesters Logo");
+
+void initialize() {
+    rot_sensor.set_position(0);
+    imu.reset();
+    chassis.calibrate(true);
+
+    // E_CONTROLLER_DIGITAL_LEFT,
+    //  pros::E_CONTROLLER_DIGITAL_RIGHT);  // If using tank, only the left
+    //  side is used.
+    //  chassis.opcontrol_curve_buttons_right_set(pros::E_CONTROLLER_DIGITAL_Y,
+    //  pros::E_CONTROLLER_DIGITAL_A);
+
+    // Autonomous Selector using LLEMU
+    // ez::as::auton_selector.autons_add({
+    //     Auton("Red Auton\n\nRed Side Autonomous.", matchAutonRed),
+    //     Auton("Blue Auton\n\nBlue Side Autonomous.", matchAutonBlue),
+    //     Auton("Skills Auton\n\nThe Autonomous for Skills Competitions.",
+    //           skills),
+    //     Auton("Example Drive\n\nDrive forward and come back.",
+    //     drive_example),
+
+    //     Auton("Example Turn\n\nTurn 3 times.", turn_example),
+    //     Auton("Drive and Turn\n\nDrive forward, turn, come back. ",
+    //           drive_and_turn),
+    //     Auton("Drive and Turn\n\nSlow down during drive.",
+    //           wait_until_change_speed),
+    //     Auton("Swing Example\n\nSwing in an 'S' curve", swing_example),
+    //     Auton("Motion Chaining\n\nDrive forward, turn, and come back, but
+    //     "
+    //           "blend everything together :D",
+    //           motion_chaining),
+    //     Auton("Combine all 3 movements", combining_movements),
+    //     Auton("Interference\n\nAfter driving forward, robot performs "
+    //           "differently if interfered or not.",
+    //           interfered_example),
+    // });
+
+    // Initialize chassis and auton selector
+    // chassis.initialize();
+    // ez::as::initialize();
+    master.rumble(".");
+}
+
+/**
+ * Runs while the robot is in the disabled state of Field Management System or
+ * the VEX Competition Switch, following either autonomous or opcontrol. When
+ * the robot is enabled, this task will exit.
+ */
+void disabled() {
+    // . . .
+}
+
+/**
+ * Runs after initialize(), and before autonomous when connected to the Field
+ * Management System or the VEX Competition Switch. This is intended for
+ * competition-specific initialization routines, such as an autonomous selector
+ * on the LCD.
+ *
+ * This task will exit when the robot is enabled and autonomous or opcontrol
+ * starts.
+ */
+void competition_initialize() {
+    // . . .
+}
+
+/**
+ * Runs the user autonomous code. This function will be started in its own task
+ * with the default priority and stack size whenever the robot is enabled via
+ * the Field Management System or the VEX Competition Switch in the autonomous
+ * mode. Alternatively, this function may be called in initialize or opcontrol
+ * for non-competition testing purposes.
+ *
+ * If the robot is disabled or communications is lost, the autonomous task
+ * will be stopped. Re-enabling the robot will restart the task, not re-start it
+ * from where it left off.
+ */
+void autonomous() {
+    // chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+
+    selector.run_auton();
+    //  auton_skills();
+    // autons_positive_red();
+    // autons_positive_blue();
+    //  autons_negative_red();
+    // autons_negative_blue();
+}
+
+/**
+ * Runs the operator control code. This function will be started in its own task
+ * with the default priority and stack size whenever the robot is enabled via
+ * the Field Management System or the VEX Competition Switch in the operator
+ * control mode.
+ *
+ * If no competition control is connected, this function will run immediately
+ * following initialize().
+ *
+ * If the robot is disabled or communications is lost, the
+ * operator control task will be stopped. Re-enabling the robot will restart the
+ * task, not resume it from where it left off.
+ */
+
+lemlib::ExpoDriveCurve throttle(3, 12, 1.05);
+lemlib::ExpoDriveCurve steerCurve(3, 12, 1.05);
+
+namespace pros {
+#define E_CONTROLLER_DIGITAL_L0 E_CONTROLLER_DIGITAL_RIGHT
+#define E_CONTROLLER_DIGITAL_R0 E_CONTROLLER_DIGITAL_Y
+}
+
+void opcontrol() {
+    // FIXME: REMOVE - bodge
+    // autonomous();
+    // imu.calibrate();
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
+        master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+        autonomous();
+        return;
+    }
+
+    // This is preference to what you like to drive on
+    pros::motor_brake_mode_e_t driver_preference_brake = MOTOR_BRAKE_COAST;
+
+    chassis.setBrakeMode(driver_preference_brake);
+
+
+    while (true) {
+        /* if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP) &&
+            master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
+            master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+            autonomous();
+            return;
+        } */
+
+        int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
+        int rightY = (master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
+
+        chassis.tank(leftY, rightY);
+
+        pros::delay(10); // This is used for timer calculations!
+    }
+}
