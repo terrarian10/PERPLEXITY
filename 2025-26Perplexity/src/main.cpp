@@ -1,5 +1,5 @@
 #include "main.h"
-#include "Intake.hpp"
+//#include "Intake.hpp"
 #include "autons.hpp"
 #include "pros/misc.h"
 #include "robodash/api.h" // IWYU pragma: export
@@ -10,21 +10,21 @@
 /////
 
 // Chassis constructor
-pros::MotorGroup left_motors({ -17, 19, -18 }, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({ -15, 14, 13 }, pros::MotorGearset::blue);
+pros::MotorGroup left_motors({ 11, -1, -2 }, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({ -20, 19, 10 }, pros::MotorGearset::blue);
 lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               &right_motors, // right motor group
                               10.75,         // 10 inch track width
-                              lemlib::Omniwheel::OLD_325,
+                              lemlib::Omniwheel::NEW_325,
                               360, // drivetrain rpm is 360
                               2    // horizontal drift is 2 (for now)
 );
 // create an imu on port 8
-pros::Imu imu(20);
-pros::Rotation horizontal_encoder(10);
-lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder,
-                                                lemlib::Omniwheel::NEW_275,
-                                                -5.75);
+// pros::Imu imu(20);
+// pros::Rotation horizontal_encoder(10);
+// lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder,
+//                                                 lemlib::Omniwheel::NEW_275,
+//                                                 -5.75);
 
 // pros::Rotation vertical_encoder(16);
 
@@ -35,10 +35,10 @@ lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder,
 lemlib::OdomSensors sensors(
     nullptr, // vertical tracking wheel 1, set to null
     nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-    &horizontal_tracking_wheel, // horizontal tracking wheel 1
+    nullptr, //&horizontal_tracking_wheel, // horizontal tracking wheel 1
     nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a
              // second one
-    &imu     //&imu     // inertial sensor
+    nullptr //&imu     //&imu     // inertial sensor
 );
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(
@@ -71,17 +71,6 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                         angular_controller, // angular PID settings
                         sensors             // odometry sensors
 );
-pros::MotorGroup intake_mts({ 11 }, // Motors
-                            pros::v5::MotorGears::blue,
-                            pros::v5::MotorUnits::degrees);
-pros::MotorGroup ladyBrown_mts({ -4, 6 }, // Motors
-                               pros::v5::MotorGears::rpm_200,
-                               pros::v5::MotorUnits::degrees);
-// pros::Optical optical(11);
-
-pros::Rotation rot_sensor(2);
-// ColourDetector colourDetector(optical);
-//  AirCylinder intakeEjection('b', false);
 
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 
@@ -107,8 +96,8 @@ rd::Selector selector({ { "auton_skills", auton_skills },
 // rd::Image image(&JestersLogo, "Jesters Logo");
 
 void initialize() {
-    rot_sensor.set_position(0);
-    imu.reset();
+    //rot_sensor.set_position(0);
+    //imu.reset();
     chassis.calibrate(true);
 
     // E_CONTROLLER_DIGITAL_LEFT,
