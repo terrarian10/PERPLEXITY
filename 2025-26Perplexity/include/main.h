@@ -12,10 +12,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-// meow :3 nyaa~
-//              -Dylan Shah
-// When we put the code in our notebook the Judges are going to be so confused
-//                                      - Gabriel Hein
+
+
 
 #ifndef _PROS_MAIN_H_
 #define _PROS_MAIN_H_
