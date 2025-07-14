@@ -1,7 +1,7 @@
-#include "outtake.hpp"
+#include "Outtake.hpp"
 #include <cstdint>
 
-void outtake::move(State state) {
+void Outtake::move(State state) {
     this->state = state;
 
     task.remove();
@@ -10,7 +10,7 @@ void outtake::move(State state) {
         pros::Task([this, state]() -> void { this->loop(state); }, "outtake");
 };
 
-void outtake::loop(State state) {
+void Outtake::loop(State state) {
     uint32_t timer = 0;
 
     while (true) {

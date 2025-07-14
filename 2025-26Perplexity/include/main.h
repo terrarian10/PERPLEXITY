@@ -12,9 +12,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-
-
-
 #ifndef _PROS_MAIN_H_
 #define _PROS_MAIN_H_
 
@@ -27,23 +24,16 @@
 /**
  * You can add C++-only headers here
  */
-//#include "Color_Detector.hpp" // IWYU pragma: export
-//#include "Intake.hpp"         // IWYU pragma: export
-//#include "airCylinder.hpp"    // IWYU pragma: export
-#include "autons.hpp"         // IWYU pragma: export
-//#include "ladyBrown.hpp"      // IWYU pragma: export
-#include <iostream>           // IWYU pragma: export
+
+#include "Outtake.hpp" // IWYU pragma: export
+#include "autons.hpp"  // IWYU pragma: export
+#include <iostream>    // IWYU pragma: export
 
 extern pros::Controller master;
-//extern Intake intake;
 extern lemlib::Chassis chassis;
-//extern AirCylinder backClamp;
-// extern ladyBrown lady_brown;
-//extern AirCylinder doinker;
+extern Outtake outtake;
 
 #endif
-
-// using namespace okapi::literals;
 
 /**
  * Prototypes for the competition control tasks are redefined here to ensure

@@ -1,13 +1,10 @@
 #include "main.h"
-//#include "Intake.hpp"
+#include "Outtake.hpp"
 #include "autons.hpp"
+#include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
+#include "pros/motor_group.hpp"
 #include "robodash/api.h" // IWYU pragma: export
-
-/////
-// For installation, upgrading, documentations, and tutorials, check out our
-// website! https://ez-robotics.github.io/EZ-Template/
-/////
 
 // Chassis constructor
 pros::MotorGroup left_motors({ 11, -1, -2 }, pros::MotorGearset::blue);
@@ -19,26 +16,16 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               360, // drivetrain rpm is 360
                               2    // horizontal drift is 2 (for now)
 );
-// create an imu on port 8
-// pros::Imu imu(20);
-// pros::Rotation horizontal_encoder(10);
-// lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder,
-//                                                 lemlib::Omniwheel::NEW_275,
-//                                                 -5.75);
 
-// pros::Rotation vertical_encoder(16);
-
-// lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder,
-//                                               lemlib::Omniwheel::NEW_275,
-//                                               -5.75);
+pros::MotorGroup outtake_mts({ 4, 6, 7 }, pros::MotorGearset::green);
+Outtake outtake(outtake_mts, Outtake::State::OFF, 12000);
 
 lemlib::OdomSensors sensors(
-    nullptr, // vertical tracking wheel 1, set to null
-    nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-    nullptr, //&horizontal_tracking_wheel, // horizontal tracking wheel 1
-    nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a
-             // second one
-    nullptr //&imu     //&imu     // inertial sensor
+    nullptr, // vertical tracking wheel 1, set to nullptr
+    nullptr, // vertical tracking wheel 2
+    nullptr, // horizontal tracking wheel 1
+    nullptr, // horizontal tracking wheel 2
+    nullptr  // imu
 );
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(
@@ -72,17 +59,15 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                         sensors             // odometry sensors
 );
 
+// Create Controller
 pros::Controller master(pros::E_CONTROLLER_MASTER);
-
 
 /**                                                                            \
  * Runs initialization code. This occurs as soon as the program is started.    \
  *                                                                             \
  * All other competition modes are blocked by initialize; it is recommended    \
  * to keep execution time for this mode under a few seconds.                   \
-autons_back_red autons_back_blue                                               \
  */
-// rd::Console console;
 rd::Selector selector({ { "auton_skills", auton_skills },
                         { "autons_positive_red", autons_positive_red },
                         { "autons_positive_blue", autons_positive_blue },
@@ -90,50 +75,11 @@ rd::Selector selector({ { "auton_skills", auton_skills },
                         { "autons_negative_blue", autons_negative_blue },
                         { "Auton Touch", autons_touch } });
 
-// #include "liblvgl/lvgl.h"
-// extern const lv_img_dsc_t JestersLogo;
-
-// rd::Image image(&JestersLogo, "Jesters Logo");
-
 void initialize() {
-    //rot_sensor.set_position(0);
-    //imu.reset();
+    // imu.reset();
     chassis.calibrate(true);
 
-    // E_CONTROLLER_DIGITAL_LEFT,
-    //  pros::E_CONTROLLER_DIGITAL_RIGHT);  // If using tank, only the left
-    //  side is used.
-    //  chassis.opcontrol_curve_buttons_right_set(pros::E_CONTROLLER_DIGITAL_Y,
-    //  pros::E_CONTROLLER_DIGITAL_A);
-
-    // Autonomous Selector using LLEMU
-    // ez::as::auton_selector.autons_add({
-    //     Auton("Red Auton\n\nRed Side Autonomous.", matchAutonRed),
-    //     Auton("Blue Auton\n\nBlue Side Autonomous.", matchAutonBlue),
-    //     Auton("Skills Auton\n\nThe Autonomous for Skills Competitions.",
-    //           skills),
-    //     Auton("Example Drive\n\nDrive forward and come back.",
-    //     drive_example),
-
-    //     Auton("Example Turn\n\nTurn 3 times.", turn_example),
-    //     Auton("Drive and Turn\n\nDrive forward, turn, come back. ",
-    //           drive_and_turn),
-    //     Auton("Drive and Turn\n\nSlow down during drive.",
-    //           wait_until_change_speed),
-    //     Auton("Swing Example\n\nSwing in an 'S' curve", swing_example),
-    //     Auton("Motion Chaining\n\nDrive forward, turn, and come back, but
-    //     "
-    //           "blend everything together :D",
-    //           motion_chaining),
-    //     Auton("Combine all 3 movements", combining_movements),
-    //     Auton("Interference\n\nAfter driving forward, robot performs "
-    //           "differently if interfered or not.",
-    //           interfered_example),
-    // });
-
-    // Initialize chassis and auton selector
-    // chassis.initialize();
-    // ez::as::initialize();
+    // Initialize chassis
     master.rumble(".");
 }
 
@@ -171,14 +117,26 @@ void competition_initialize() {
  * from where it left off.
  */
 void autonomous() {
-    // chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+    // Set the break mode for the autonomous
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 
+    // run auton selector
     selector.run_auton();
+
+    // Run specific auton, used for testing
     //  auton_skills();
     // autons_positive_red();
     // autons_positive_blue();
     //  autons_negative_red();
     // autons_negative_blue();
+}
+
+lemlib::ExpoDriveCurve throttle(3, 12, 1.05);
+lemlib::ExpoDriveCurve steerCurve(3, 12, 1.05);
+
+namespace pros {
+#define E_CONTROLLER_DIGITAL_L0 E_CONTROLLER_DIGITAL_RIGHT
+#define E_CONTROLLER_DIGITAL_R0 E_CONTROLLER_DIGITAL_Y
 }
 
 /**
@@ -195,43 +153,27 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
-lemlib::ExpoDriveCurve throttle(3, 12, 1.05);
-lemlib::ExpoDriveCurve steerCurve(3, 12, 1.05);
-
-namespace pros {
-#define E_CONTROLLER_DIGITAL_L0 E_CONTROLLER_DIGITAL_RIGHT
-#define E_CONTROLLER_DIGITAL_R0 E_CONTROLLER_DIGITAL_Y
-}
-
 void opcontrol() {
     // FIXME: REMOVE - bodge
-    // autonomous();
-    // imu.calibrate();
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
         master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
         autonomous();
         return;
-    }
+    } // Forcibly runs the autonomous, for debugging
 
     // This is preference to what you like to drive on
     pros::motor_brake_mode_e_t driver_preference_brake = MOTOR_BRAKE_COAST;
 
     chassis.setBrakeMode(driver_preference_brake);
-
-
+    // opcontrol loop
     while (true) {
-        /* if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP) &&
-            master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
-            master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
-            autonomous();
-            return;
-        } */
-
+        // Get how far the joysticks are moved
         int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
         int rightY = (master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
-
+        // turn it into tank drive
         chassis.tank(leftY, rightY);
-
+        // delay a small amount to prevent brain overload and improve timer
+        // accuracy
         pros::delay(10); // This is used for timer calculations!
     }
 }

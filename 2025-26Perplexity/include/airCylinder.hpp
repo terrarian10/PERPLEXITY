@@ -1,10 +1,9 @@
 /**
  * @file airCylinder.hpp
- * @author Dylan Shah
  * @brief A class to control a pneumatic cylinder and save the state of the
  * cylinder.
  * @version 1.1
- * @date 2025-01-05
+ * @date 2025-07-14
  *
  * @copyright Copyright (c) 2025
  *

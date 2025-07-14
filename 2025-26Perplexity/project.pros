@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "DATS CWAAZY",
+    "project_name": "Uhm",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -466,7 +466,7 @@
     },
     "upload_options": {
       "after": "run",
-      "description": "Crazy",
+      "description": "COde",
       "icon": "pros"
     },
     "use_early_access": false
