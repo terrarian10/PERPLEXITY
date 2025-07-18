@@ -1,39 +1,49 @@
 #include "Outtake.hpp"
+#include "pros/rtos.h"
+#include <cstddef>
 #include <cstdint>
 
 void Outtake::move(State state) {
     this->state = state;
+    // if (task.get_count() > 0) task.remove();
+    std::cout << "Tasking" << std::endl;
 
     task.remove();
+    std::cout << "Making Task" << std::endl;
 
     task =
-        pros::Task([this, state]() -> void { this->loop(state); }, "outtake");
+        pros::Task([this, state]() -> void { this->loop(state); }, "Outtake");
 };
 
 void Outtake::loop(State state) {
     uint32_t timer = 0;
-
+    // Move motors differently depending on what needs to be done
     while (true) {
+
         switch (state) {
             case State::TOP:
-                this[0].move_voltage(1 * RUNNING_VOLTAGE);
-                this[1].move_voltage(1 * RUNNING_VOLTAGE);
-                this[2].move_voltage(1 * RUNNING_VOLTAGE);
+                std::cout << RUNNING_VOLTAGE << std::endl;
+
+                this->outtake_1.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
                 break;
             case State::MIDDLE:
-                this[0].move_voltage(1 * RUNNING_VOLTAGE);
-                this[1].move_voltage(1 * RUNNING_VOLTAGE);
-                this[2].move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_1.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
                 break;
             case State::HOARD:
-                this[0].move_voltage(1 * RUNNING_VOLTAGE);
-                this[1].move_voltage(1 * RUNNING_VOLTAGE);
-                this[2].move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_1.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
                 break;
             case State::OFF:
-                this[0].move_voltage(0 * RUNNING_VOLTAGE);
-                this[1].move_voltage(0 * RUNNING_VOLTAGE);
-                this[2].move_voltage(0 * RUNNING_VOLTAGE);
+                std::cout << "OffRunning" << std::endl;
+
+                this->outtake_1.move_voltage(0);
+                this->outtake_2.move_voltage(0);
+                this->outtake_3.move_voltage(0);
                 break;
         }
         pros::delay(20);

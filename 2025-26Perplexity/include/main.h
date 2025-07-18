@@ -16,9 +16,14 @@
 #define _PROS_MAIN_H_
 
 #define PROS_USE_SIMPLE_NAMES
-#include "api.h"          // IWYU pragma: export
+#include "Outtake.hpp"
+#include "api.h" // IWYU pragma: export
+#include "autons.hpp"
 #include "lemlib/api.hpp" // IWYU pragma: export
 #include "okapi/api.hpp"  // IWYU pragma: export
+#include "pros/abstract_motor.hpp"
+#include "pros/misc.h"
+#include "pros/motor_group.hpp"
 
 #ifdef __cplusplus
 /**

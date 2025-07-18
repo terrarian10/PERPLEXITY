@@ -1,10 +1,9 @@
 #include "main.h"
-#include "Outtake.hpp"
-#include "autons.hpp"
+
 #include "pros/abstract_motor.hpp"
-#include "pros/misc.h"
-#include "pros/motor_group.hpp"
+#include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
+#include <cstddef>
 
 // Chassis constructor
 pros::MotorGroup left_motors({ 11, -1, -2 }, pros::MotorGearset::blue);
@@ -17,8 +16,11 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               2    // horizontal drift is 2 (for now)
 );
 
-pros::MotorGroup outtake_mts({ 4, 6, 7 }, pros::MotorGearset::green);
-Outtake outtake(outtake_mts, Outtake::State::OFF, 12000);
+pros::Motor outt_1(5, pros::MotorGearset::green);
+pros::Motor outt_2(6, pros::MotorGearset::green);
+pros::Motor outt_3(7, pros::MotorGearset::green);
+
+Outtake outtake(outt_1, outt_2, outt_3, Outtake::State::OFF, 12000);
 
 lemlib::OdomSensors sensors(
     nullptr, // vertical tracking wheel 1, set to nullptr
@@ -68,16 +70,18 @@ pros::Controller master(pros::E_CONTROLLER_MASTER);
  * All other competition modes are blocked by initialize; it is recommended    \
  * to keep execution time for this mode under a few seconds.                   \
  */
-rd::Selector selector({ { "auton_skills", auton_skills },
-                        { "autons_positive_red", autons_positive_red },
-                        { "autons_positive_blue", autons_positive_blue },
-                        { "autons_negative_red", autons_negative_red },
-                        { "autons_negative_blue", autons_negative_blue },
-                        { "Auton Touch", autons_touch } });
+rd::Selector selector({
+    { "auton_skills", auton_skills },
+    { "autons_positive_red", autons_positive_red },
+    { "autons_positive_blue", autons_positive_blue },
+    { "autons_negative_red", autons_negative_red },
+    { "autons_negative_blue", autons_negative_blue },
+});
 
 void initialize() {
     // imu.reset();
     chassis.calibrate(true);
+    // outtake.move(Outtake::State::OFF);
 
     // Initialize chassis
     master.rumble(".");
@@ -167,7 +171,8 @@ void opcontrol() {
     chassis.setBrakeMode(driver_preference_brake);
     // opcontrol loop
     while (true) {
-        // Get how far the joysticks are moved
+        // std::cout << "Running" << std::endl;
+        //  Get how far the joysticks are moved
         int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
         int rightY = (master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
         // turn it into tank drive
@@ -175,5 +180,17 @@ void opcontrol() {
         // delay a small amount to prevent brain overload and improve timer
         // accuracy
         pros::delay(10); // This is used for timer calculations!
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+            outtake.move(Outtake::State::HOARD);
+        } else if (master.get_digital_new_press(
+                       pros::E_CONTROLLER_DIGITAL_L2)) {
+            outtake.move(Outtake::State::OFF);
+        } else if (master.get_digital_new_press(
+                       pros::E_CONTROLLER_DIGITAL_R1)) {
+            outtake.move(Outtake::State::TOP);
+        } else if (master.get_digital_new_press(
+                       pros::E_CONTROLLER_DIGITAL_R2)) {
+            outtake.move(Outtake::State::MIDDLE);
+        }
     }
 }

@@ -30,7 +30,6 @@
 extern lemlib::Chassis chassis;
 
 void auton_skills();
-void autons_touch();
 void autons_positive_red();
 void autons_positive_blue();
 void autons_negative_red();
