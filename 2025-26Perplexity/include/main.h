@@ -15,6 +15,7 @@
 #ifndef _PROS_MAIN_H_
 #define _PROS_MAIN_H_
 
+#include "airCylinder.hpp"
 #define PROS_USE_SIMPLE_NAMES
 #include "Outtake.hpp"
 #include "api.h" // IWYU pragma: export
@@ -30,13 +31,16 @@
  * You can add C++-only headers here
  */
 
-#include "Outtake.hpp" // IWYU pragma: export
-#include "autons.hpp"  // IWYU pragma: export
-#include <iostream>    // IWYU pragma: export
+#include "Outtake.hpp"     // IWYU pragma: export
+#include "airCylinder.hpp" // IWYU pragma: export
+#include "autons.hpp"      // IWYU pragma: export
+
+#include <iostream> // IWYU pragma: export
 
 extern pros::Controller master;
 extern lemlib::Chassis chassis;
 extern Outtake outtake;
+extern AirCylinder scraper;
 
 #endif
 

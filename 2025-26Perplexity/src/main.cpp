@@ -1,5 +1,6 @@
 #include "main.h"
 
+#include "airCylinder.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/motors.h"
 #include "pros/rtos.hpp"
@@ -16,6 +17,9 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               360, // drivetrain rpm is 360
                               2    // horizontal drift is 2 (for now)
 );
+
+// Initialize the Scraper
+AirCylinder scraper('h');
 
 pros::Motor outt_1(5, pros::MotorGearset::green);
 pros::Motor outt_2(6, pros::MotorGearset::green);
