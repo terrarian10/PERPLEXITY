@@ -3,6 +3,7 @@
 #include <cmath>
 
 // clang-format off
+// normal person measurements
 [[nodiscard]] inline const constexpr long double  operator""_in  (long double inches)          { return inches; }
 [[nodiscard]] inline const constexpr long long    operator""_in  (unsigned long long inches)   { return inches; }
 [[nodiscard]] inline const constexpr long double  operator""_ft  (long double feet)            { return feet * 12; }

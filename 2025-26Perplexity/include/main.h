@@ -12,6 +12,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+// Import many thingies
 #ifndef _PROS_MAIN_H_
 #define _PROS_MAIN_H_
 
@@ -41,6 +42,7 @@ extern pros::Controller master;
 extern lemlib::Chassis chassis;
 extern Outtake outtake;
 extern AirCylinder scraper;
+extern AirCylinder attacher;
 
 #endif
 

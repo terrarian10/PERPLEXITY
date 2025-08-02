@@ -2,6 +2,7 @@
 
 #include "airCylinder.hpp"
 #include "pros/abstract_motor.hpp"
+#include "pros/misc.h"
 #include "pros/motors.h"
 #include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
@@ -10,6 +11,7 @@
 // Chassis constructor
 pros::MotorGroup left_motors({ 11, -1, -2 }, pros::MotorGearset::blue);
 pros::MotorGroup right_motors({ -20, 19, 10 }, pros::MotorGearset::blue);
+// Piggyback off of Purdues hard work
 lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               &right_motors, // right motor group
                               10.75,         // 10 inch track width
@@ -20,13 +22,21 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
 
 // Initialize the Scraper
 AirCylinder scraper('h');
+// Make attacher wirj
+AirCylinder attacher('g');
 
+// Literally anything  is better than this method
+// Don't touch it it works
 pros::Motor outt_1(5, pros::MotorGearset::green);
 pros::Motor outt_2(6, pros::MotorGearset::green);
 pros::Motor outt_3(7, pros::MotorGearset::green);
 
-Outtake outtake(outt_1, outt_2, outt_3, Outtake::State::OFF, 12000);
-
+Outtake outtake(outt_1,
+                outt_2,
+                outt_3,
+                /* This is very bad for memory. I think. */ Outtake::State::OFF,
+                12000);
+// The sensors are imaginary
 lemlib::OdomSensors sensors(
     nullptr, // vertical tracking wheel 1, set to nullptr
     nullptr, // vertical tracking wheel 2
@@ -34,6 +44,8 @@ lemlib::OdomSensors sensors(
     nullptr, // horizontal tracking wheel 2
     nullptr  // imu
 );
+
+// Guess and check final boss
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(
     20,  // proportional gain (kP)
@@ -75,6 +87,8 @@ pros::Controller master(pros::E_CONTROLLER_MASTER);
  * All other competition modes are blocked by initialize; it is recommended    \
  * to keep execution time for this mode under a few seconds.                   \
  */
+
+// It looks nice
 rd::Selector selector({
     { "auton_skills", auton_skills },
     { "autons_positive_red", autons_positive_red },
@@ -83,6 +97,7 @@ rd::Selector selector({
     { "autons_negative_blue", autons_negative_blue },
 });
 
+// Make sure bot is ready
 void initialize() {
     // imu.reset();
     chassis.calibrate(true);
@@ -98,6 +113,7 @@ void initialize() {
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
+// Why would we need this
 void disabled() {
     // . . .
 }
@@ -111,6 +127,7 @@ void disabled() {
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
+// Useless
 void competition_initialize() {
     // . . .
 }
@@ -131,6 +148,7 @@ void autonomous() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 
     // run auton selector
+    // watch code implode
     selector.run_auton();
 
     // Run specific auton, used for testing
@@ -140,7 +158,7 @@ void autonomous() {
     //  autons_negative_red();
     // autons_negative_blue();
 }
-
+// Curve stuff good
 lemlib::ExpoDriveCurve throttle(3, 12, 1.05);
 lemlib::ExpoDriveCurve steerCurve(3, 12, 1.05);
 
@@ -171,32 +189,62 @@ void opcontrol() {
         return;
     } // Forcibly runs the autonomous, for debugging
 
-    // This is preference to what you like to drive on
-    pros::motor_brake_mode_e_t driver_preference_brake = MOTOR_BRAKE_COAST;
+    // This is preference to what you like to drive on, because ofc it can be 2
+    // seperate lines
+    pros::motor_brake_mode_e_t driver_preference_brake =
+        pros::E_MOTOR_BRAKE_COAST;
 
     chassis.setBrakeMode(driver_preference_brake);
-    // opcontrol loop
+    // watch afshin implode the bot
     while (true) {
         // std::cout << "Running" << std::endl;
         //  Get how far the joysticks are moved
         int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
         int rightY = (master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
-        // turn it into tank drive
+        // make it TENK
         chassis.tank(leftY, rightY);
         // delay a small amount to prevent brain overload and improve timer
         // accuracy
-        pros::delay(10); // This is used for timer calculations!
+        pros::delay(10); // Timer calculations and not making the brain into the
+                         // first portable fusion reactor
+        // Outtake is actual insanity please fix. It works I guess
+        // I dare someone to find a more inefficient way to do this
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-            outtake.move(Outtake::State::HOARD);
+            if (outtake.get_state() == Outtake::State::HOARD) {
+                outtake.move(Outtake::State::OFF);
+            } else {
+                outtake.move(Outtake::State::HOARD);
+            }
+
         } else if (master.get_digital_new_press(
                        pros::E_CONTROLLER_DIGITAL_L2)) {
-            outtake.move(Outtake::State::OFF);
+            if (outtake.get_state() == Outtake::State::BOTTOM) {
+                outtake.move(Outtake::State::OFF);
+            } else {
+                outtake.move(Outtake::State::BOTTOM);
+            }
         } else if (master.get_digital_new_press(
                        pros::E_CONTROLLER_DIGITAL_R1)) {
-            outtake.move(Outtake::State::TOP);
+            if (outtake.get_state() == Outtake::State::TOP) {
+                outtake.move(Outtake::State::OFF);
+            } else {
+                outtake.move(Outtake::State::TOP);
+            }
         } else if (master.get_digital_new_press(
                        pros::E_CONTROLLER_DIGITAL_R2)) {
-            outtake.move(Outtake::State::MIDDLE);
+            if (outtake.get_state() == Outtake::State::MIDDLE) {
+                outtake.move(Outtake::State::OFF);
+            } else {
+                outtake.move(Outtake::State::MIDDLE);
+            }
+        }
+        // Toggle funny scrapers
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+            scraper.toggle();
+        }
+        // Slammy attacher thingy
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+            attacher.toggle();
         }
     }
 }

@@ -11,7 +11,7 @@
 
 #pragma once
 
-// Import necessary classes
+// Import unnecessary classes
 #include "pros/abstract_motor.hpp"
 #include "pros/motor_group.hpp"
 
@@ -19,13 +19,15 @@
 class Outtake {
   public:
     // different states for the outtake
-    enum class State { OFF, HOARD, MIDDLE, TOP };
+    enum class State { OFF, HOARD, MIDDLE, TOP, BOTTOM };
     /**
      * @brief Code for an outtake object
      * @param outtake_mtrs The motors that control the outtake
      * @param state The state the outtake is in
      * @param RUNNING_VOLTAGE how much voltage to run the intake on
      */
+    // Motorgroup is not motorgrouping
+    // Should probably make it work but single motor 3 times ig
     Outtake(pros::Motor outtake_1,
             pros::Motor outtake_2,
             pros::Motor outtake_3,

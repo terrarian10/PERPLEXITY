@@ -23,6 +23,7 @@ class AirCylinder {
      * @param value
              The value that the piston STARTS WITH
      */
+    // Pneumatics use weird wording
     AirCylinder(std::uint8_t port, bool value = false)
         : ADIport(port, value)
         , value(value) {}
@@ -40,6 +41,7 @@ class AirCylinder {
      * @brief Toggles the pneumatic cylinder to the other state
      *
      */
+    // Peak effort
     void toggle(void) { this->set_value(!this->value); }
     /**
      * @brief Get the state of the air cylinder
