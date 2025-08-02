@@ -1,6 +1,7 @@
 #include "main.h"
 
 #include "pros/abstract_motor.hpp"
+#include "pros/motors.h"
 #include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
 #include <cstddef>
@@ -81,6 +82,7 @@ rd::Selector selector({
 void initialize() {
     // imu.reset();
     chassis.calibrate(true);
+    outt_1.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     // outtake.move(Outtake::State::OFF);
 
     // Initialize chassis
