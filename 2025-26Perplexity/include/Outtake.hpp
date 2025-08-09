@@ -12,6 +12,7 @@
 #pragma once
 
 // Import unnecessary classes
+#include "color_sort.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/motor_group.hpp"
 
@@ -31,11 +32,13 @@ class Outtake {
     Outtake(pros::Motor outtake_1,
             pros::Motor outtake_2,
             pros::Motor outtake_3,
+            ColourDetector colorDetector,
             State state = State::OFF,
             const std::uint32_t RUNNING_VOLTAGE = 12000)
         : outtake_1(outtake_1)
         , outtake_2(outtake_2)
         , outtake_3(outtake_3)
+        , colorDetector(colorDetector)
         , RUNNING_VOLTAGE(RUNNING_VOLTAGE)
         , task(pros::Task([]() {}, "Outtake")) {
         move(state);
@@ -43,6 +46,7 @@ class Outtake {
 
     // Initialize various functions and variables
     void move(State state);
+    void ejection();
 
     const State get_state() const { return state; }
 
@@ -53,6 +57,8 @@ class Outtake {
     State state;
     pros::Motor outtake_1;
     pros::Motor outtake_2;
+    ColourDetector colorDetector;
+
     pros::Motor outtake_3;
     void loop(State state);
 };

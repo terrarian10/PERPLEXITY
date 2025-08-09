@@ -19,6 +19,8 @@
 #include "airCylinder.hpp"
 #define PROS_USE_SIMPLE_NAMES
 #include "Outtake.hpp"
+// #include "controller_data.hpp"
+
 #include "api.h" // IWYU pragma: export
 #include "autons.hpp"
 #include "lemlib/api.hpp" // IWYU pragma: export
@@ -31,6 +33,7 @@
 /**
  * You can add C++-only headers here
  */
+#include "controller_data.hpp"
 
 #include "Outtake.hpp"     // IWYU pragma: export
 #include "airCylinder.hpp" // IWYU pragma: export

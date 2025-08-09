@@ -1,5 +1,6 @@
 #include "Outtake.hpp"
 #include "pros/rtos.h"
+#include "pros/rtos.hpp"
 #include <cstddef>
 #include <cstdint>
 
@@ -23,29 +24,27 @@ void Outtake::loop(State state) {
         switch (state) {
             // Guess and check final boss phase 2
             case State::TOP:
-                std::cout << RUNNING_VOLTAGE << std::endl;
                 // Wants ~pointers~ for some reason
-                this->outtake_1.move_voltage(1 * RUNNING_VOLTAGE);
-                this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
-                this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_1.move_voltage(-1 * RUNNING_VOLTAGE);
+                this->outtake_2.move_voltage(-1 * RUNNING_VOLTAGE);
+                this->outtake_3.move_voltage(-1 * RUNNING_VOLTAGE);
                 break;
             case State::MIDDLE:
-                this->outtake_1.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_1.move_voltage(-1 * RUNNING_VOLTAGE);
                 this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
-                this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_3.move_voltage(-1 * RUNNING_VOLTAGE);
                 break;
             case State::HOARD:
-                this->outtake_1.move_voltage(1 * RUNNING_VOLTAGE);
-                this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_1.move_voltage(-1 * RUNNING_VOLTAGE);
+                this->outtake_2.move_voltage(-1 * RUNNING_VOLTAGE);
                 this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
                 break;
             case State::BOTTOM:
                 this->outtake_1.move_voltage(1 * RUNNING_VOLTAGE);
                 this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
-                this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
+                this->outtake_3.move_voltage(-1 * RUNNING_VOLTAGE);
                 break;
             case State::OFF:
-                std::cout << "OffRunning" << std::endl;
 
                 this->outtake_1.move_voltage(0);
                 this->outtake_2.move_voltage(0);
@@ -55,3 +54,12 @@ void Outtake::loop(State state) {
         pros::delay(20);
     }
 };
+
+void Outtake::ejection() {
+    task.suspend();
+    this->outtake_1.move_voltage(-1 * RUNNING_VOLTAGE);
+    this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
+    this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
+    pros::delay(350);
+    task.resume();
+}

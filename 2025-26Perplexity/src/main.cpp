@@ -1,9 +1,11 @@
 #include "main.h"
 
 #include "airCylinder.hpp"
+#include "color_sort.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
 #include "pros/motors.h"
+#include "pros/optical.hpp"
 #include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
 #include <cstddef>
@@ -20,20 +22,26 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               2    // horizontal drift is 2 (for now)
 );
 
+pros::Optical optical(11);
+ColourDetector colorDetector(optical);
+
 // Initialize the Scraper
 AirCylinder scraper('h');
 // Make attacher wirj
 AirCylinder attacher('g');
+// Doubleparrk
+AirCylinder double_park('e');
 
 // Literally anything  is better than this method
 // Don't touch it it works
-pros::Motor outt_1(5, pros::MotorGearset::green);
+pros::Motor outt_1(5, pros::MotorGearset::blue);
 pros::Motor outt_2(6, pros::MotorGearset::green);
 pros::Motor outt_3(7, pros::MotorGearset::green);
 
 Outtake outtake(outt_1,
                 outt_2,
                 outt_3,
+                colorDetector,
                 /* This is very bad for memory. I think. */ Outtake::State::OFF,
                 12000);
 // The sensors are imaginary
@@ -182,7 +190,7 @@ namespace pros {
  */
 
 void opcontrol() {
-    // FIXME: REMOVE - bodge
+
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
         master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
         autonomous();
@@ -195,8 +203,14 @@ void opcontrol() {
         pros::E_MOTOR_BRAKE_COAST;
 
     chassis.setBrakeMode(driver_preference_brake);
+
     // watch afshin implode the bot
     while (true) {
+
+        if (colorDetector.get_color() == colorDetector.BLUE) {
+            std::cout << "AAAAA" << std::endl;
+            outtake.ejection();
+        }
         // std::cout << "Running" << std::endl;
         //  Get how far the joysticks are moved
         int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
@@ -246,5 +260,10 @@ void opcontrol() {
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
             attacher.toggle();
         }
+        // "Double-Park-Thingy" as I was told
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
+            double_park.toggle();
+        }
+        // std::cout << colorDetector.get_proximity() << '\n';
     }
 }
