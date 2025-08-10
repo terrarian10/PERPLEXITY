@@ -3,7 +3,9 @@
 #include "lemlib/chassis/chassis.hpp"
 #include "pros/misc.h"
 #include "pros/misc.hpp"
+#include <functional>
 #include <iterator>
+#include <vector>
 
 void ModularControl::updateDisplay(ModularComponent modc) {
     controller.clear();
@@ -23,4 +25,19 @@ void ModularControl::activateMacro(ModularComponent modc, bool isRed) {
     }
 }
 
-int getNearest(int** matrix, int start, int end) {}
+std::vector<ModularControl::cord> ModularControl::getAvail(cord botLocation,
+                                                           bool isRed) {
+    return std::invoke(
+        [](std::vector<teamCord> matchload,
+           bool isRed) -> std::vector<ModularControl::cord> {
+            std::vector<ModularControl::cord> r;
+            for (int i = 0; i < matchload.size(); i++) {
+                if (matchload[i].isRed == isRed) {
+                    r.emplace_back(matchload[i].cordnate);
+                }
+            }
+            return r;
+        },
+        matchload,
+        isRed);
+}

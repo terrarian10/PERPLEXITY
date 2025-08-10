@@ -17,7 +17,7 @@
 #include "pros/misc.h"
 #include "pros/misc.hpp"
 #include <cmath>
-
+#include <vector>
 // Setup class
 class ModularControl {
   public:
@@ -43,9 +43,20 @@ class ModularControl {
         , outtake(outtake) {
         updateDisplay(modc);
     };
-
+    // Point :)
+    struct cord {
+        int x;
+        int y;
+        int rot;
+    };
+    struct teamCord {
+        cord cordnate;
+        bool isRed;
+    };
     // Initialize various functions and variables
     void updateDisplay(ModularComponent modc);
+    std::vector<cord> getAvail(cord botLocation, bool isRed);
+
     void activateMacro(ModularComponent modc, bool isRed);
     // Schitzophrenia
     std::function<int(int x1, int y1, int x2, int y2)> getDistance =
@@ -63,9 +74,8 @@ class ModularControl {
     ModularComponent modc;
     // Matrix Coordinates YIPPEE
     // {X, Y, ROTATION, TEAM}
-    int matchload_matrix[4][4] = { { 0, 0, 0, 0 },
-                                   { 0, 0, 0, 0 },
-                                   { 0, 0, 0, 0 },
-                                   { 0, 0, 0, 0 } };
-    int gamefield_matrix[2][2] = { { -200, -200 }, { 200, 200 } };
+    std::vector<teamCord> matchload = { { { 0, 0, 0 }, true },
+                                        { { 0, 0, 0 }, true },
+                                        { { 0, 0, 0 }, false },
+                                        { { 0, 0, 0 }, false } };
 };

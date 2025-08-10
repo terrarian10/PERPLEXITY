@@ -1,5 +1,6 @@
 #include "main.h"
 
+#include "Outtake.hpp"
 #include "airCylinder.hpp"
 #include "color_sort.hpp"
 #include "pros/abstract_motor.hpp"
@@ -207,10 +208,14 @@ void opcontrol() {
     // watch afshin implode the bot
     while (true) {
 
-        if (colorDetector.get_color() == colorDetector.BLUE) {
-            std::cout << "AAAAA" << std::endl;
+        if (colorDetector.get_color() == colorDetector.BLUE &&
+            outtake.get_state() != Outtake::State::OFF) {
+            std::cout << colorDetector.get_proximity() << std::endl;
             outtake.ejection();
         }
+        std::cout << outt_1.get_efficiency() << std::endl;
+        // std::cout << colorDetector.get_color() << std::endl;
+
         // std::cout << "Running" << std::endl;
         //  Get how far the joysticks are moved
         int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));

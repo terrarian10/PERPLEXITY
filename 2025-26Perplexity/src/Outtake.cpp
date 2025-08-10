@@ -60,6 +60,9 @@ void Outtake::ejection() {
     this->outtake_1.move_voltage(-1 * RUNNING_VOLTAGE);
     this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
     this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
-    pros::delay(350);
+    pros::delay(350); // TODO:: ACCOUNT FOR MOTOR TORQUE
+                      // HIGHER TORQUE IS LESS SPEED, HOWEVER
+                      // THAT IS IN TURN DEPENDING ON WATTAGE
+                      // BECAUSE WHYYYYYY SO USE THAT TOO
     task.resume();
 }
