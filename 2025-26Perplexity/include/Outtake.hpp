@@ -15,12 +15,13 @@
 #include "color_sort.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/motor_group.hpp"
+#include <string>
+#include <vector>
 
 // Setup class
 class Outtake {
   public:
     // different states for the outtake
-    enum class State { OFF, HOARD, MIDDLE, TOP, BOTTOM };
     /**
      * @brief Code for an outtake object
      * @param outtake_mtrs The motors that control the outtake
@@ -29,36 +30,45 @@ class Outtake {
      */
     // Motorgroup is not motorgrouping
     // Should probably make it work but single motor 3 times ig
-    Outtake(pros::Motor outtake_1,
-            pros::Motor outtake_2,
-            pros::Motor outtake_3,
+    struct single_control {
+        int motorID;
+        int moveMPL;
+    };
+    struct multi_control {
+        std::vector<single_control> soloCont;
+        std::string id;
+    };
+    struct mecha_control {
+        std::vector<multi_control> motorHandling;
+        const char* taskID;
+    };
+    Outtake(std::vector<pros::Motor>& motors,
             ColourDetector colorDetector,
-            State state = State::OFF,
+            mecha_control& mechHandler,
+            std::string state,
             const std::uint32_t RUNNING_VOLTAGE = 12000)
-        : outtake_1(outtake_1)
-        , outtake_2(outtake_2)
-        , outtake_3(outtake_3)
+        : motors(motors)
         , colorDetector(colorDetector)
+        , mechHandler(mechHandler)
+        , state(state)
         , RUNNING_VOLTAGE(RUNNING_VOLTAGE)
-        , task(pros::Task([]() {}, "Outtake")) {
+        , task(pros::Task([]() {}, mechHandler.taskID)) {
         move(state);
     };
 
     // Initialize various functions and variables
-    void move(State state);
-    void ejection();
+    void move(std::string state);
+    void emergency(int delay, std::vector<single_control> override);
 
-    const State get_state() const { return state; }
+    std::string get_state() const { return state; }
 
   private:
     // Initialize various private variables
     pros::Task task;
     std::uint32_t RUNNING_VOLTAGE;
-    State state;
-    pros::Motor outtake_1;
-    pros::Motor outtake_2;
+    std::string state;
     ColourDetector colorDetector;
-
-    pros::Motor outtake_3;
-    void loop(State state);
+    std::vector<pros::Motor> motors;
+    void loop(std::string state);
+    mecha_control& mechHandler;
 };

@@ -60,6 +60,7 @@ extern "C" {
 #endif
 void autonomous(void);
 void initialize(void);
+void initialize_macros();
 void disabled(void);
 void competition_initialize(void);
 void opcontrol(void);

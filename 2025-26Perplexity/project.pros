@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "Uhm",
+    "project_name": "Insanium",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -466,8 +466,8 @@
     },
     "upload_options": {
       "after": "run",
-      "description": "COde",
-      "icon": "pros"
+      "description": "A pseudo-API for automating VEX processes",
+      "icon": "X"
     },
     "use_early_access": false
   }

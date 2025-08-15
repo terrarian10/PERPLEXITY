@@ -3,13 +3,17 @@
 #include "Outtake.hpp"
 #include "airCylinder.hpp"
 #include "color_sort.hpp"
+#include "controller_data.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
 #include "pros/motors.h"
+#include "pros/motors.hpp"
 #include "pros/optical.hpp"
 #include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
 #include <cstddef>
+#include <cstdlib>
+#include <vector>
 
 // Chassis constructor
 pros::MotorGroup left_motors({ 11, -1, -2 }, pros::MotorGearset::blue);
@@ -22,7 +26,7 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               360, // drivetrain rpm is 360
                               2    // horizontal drift is 2 (for now)
 );
-
+bool isRed;
 pros::Optical optical(11);
 ColourDetector colorDetector(optical);
 
@@ -38,13 +42,16 @@ AirCylinder double_park('e');
 pros::Motor outt_1(5, pros::MotorGearset::blue);
 pros::Motor outt_2(6, pros::MotorGearset::green);
 pros::Motor outt_3(7, pros::MotorGearset::green);
-
-Outtake outtake(outt_1,
-                outt_2,
-                outt_3,
-                colorDetector,
-                /* This is very bad for memory. I think. */ Outtake::State::OFF,
-                12000);
+std::vector<pros::Motor> test = { outt_1, outt_2, outt_3 };
+Outtake::mecha_control outtake_ctrl = {
+    { { { { 0, -1 }, { 1, -1 }, { 2, -1 } }, std::string("TOP") },
+      { { { 0, -1 }, { 1, 1 }, { 2, -1 } }, std::string("MIDDLE") },
+      { { { 0, 1 }, { 1, 1 }, { 2, -1 } }, std::string("BOTTOM") },
+      { { { 0, -1 }, { 1, -1 }, { 2, 1 } }, std::string("HOARD") },
+      { { { 0, 0 }, { 1, 0 }, { 2, 0 } }, std::string("OFF") } },
+    "Outtake"
+};
+Outtake outtake(test, colorDetector, outtake_ctrl, "OFF", 12000);
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
     nullptr, // vertical tracking wheel 1, set to nullptr
@@ -87,8 +94,16 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                         sensors             // odometry sensors
 );
 
+std::vector<ModularControl::macro> macros;
+
 // Create Controller
 pros::Controller master(pros::E_CONTROLLER_MASTER);
+
+ModularControl bartholomew(chassis,
+                           master,
+                           outtake,
+                           1); // His name is bartholomew. Please respect
+                               // Bartholomew
 
 /**                                                                            \
  * Runs initialization code. This occurs as soon as the program is started.    \
@@ -106,14 +121,25 @@ rd::Selector selector({
     { "autons_negative_blue", autons_negative_blue },
 });
 
+void initialize_macros() {
+    macros.reserve(2);
+    macros.push_back({ { { -157, -118.9, 270, true },
+                         { -157, 118.9, 270, true },
+                         { 157, 118.9, 90, false },
+                         { 157, -118.9, 90, false } },
+                       "MATCHLOAD" });
+    macros.push_back({ { { -157, -118.9, 270, true },
+                         { -157, 118.9, 270, true },
+                         { 157, 118.9, 90, false },
+                         { 157, -118.9, 90, false } },
+                       "TEST" });
+}
 // Make sure bot is ready
 void initialize() {
-    // imu.reset();
     chassis.calibrate(true);
     outt_1.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    // outtake.move(Outtake::State::OFF);
-
-    // Initialize chassis
+    initialize_macros();
+    // Initialize chassis and macros
     master.rumble(".");
 }
 
@@ -191,7 +217,7 @@ namespace pros {
  */
 
 void opcontrol() {
-
+    bartholomew.updateDisplay(macros[bartholomew.get_active_address() - 1]);
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
         master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
         autonomous();
@@ -204,19 +230,25 @@ void opcontrol() {
         pros::E_MOTOR_BRAKE_COAST;
 
     chassis.setBrakeMode(driver_preference_brake);
-
+    int iteration = 0;
     // watch afshin implode the bot
     while (true) {
+        std::cout << bartholomew.get_active_address() - 1 << "\n";
+        std::cout << std::abs(
+                         master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) /
+                         master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)
+                  << "\n";
 
         if (colorDetector.get_color() == colorDetector.BLUE &&
-            outtake.get_state() != Outtake::State::OFF) {
+            outtake.get_state() != std::string("OFF")) {
             std::cout << colorDetector.get_proximity() << std::endl;
-            outtake.ejection();
+            outtake.emergency(350, { { 0, -1 }, { 0, 1 }, { 0, 1 } });
         }
-        std::cout << outt_1.get_efficiency() << std::endl;
-        // std::cout << colorDetector.get_color() << std::endl;
-
-        // std::cout << "Running" << std::endl;
+        if (iteration % 10 == 0) { master.clear(); }
+        if (iteration % 5 == 0) {
+            bartholomew.updateDisplay(
+                macros[bartholomew.get_active_address() - 1]);
+        }
         //  Get how far the joysticks are moved
         int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
         int rightY = (master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
@@ -225,36 +257,55 @@ void opcontrol() {
         // delay a small amount to prevent brain overload and improve timer
         // accuracy
         pros::delay(10); // Timer calculations and not making the brain into the
-                         // first portable fusion reactor
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+            bartholomew.activateMacro(
+                macros[bartholomew.get_active_address() - 1], isRed);
+        }
+        if (std::abs(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) >
+            115) {
+            bartholomew.incrementAddress(
+                std::abs(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) /
+                master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X));
+            if (bartholomew.get_active_address() < 1) {
+                bartholomew.incrementAddress(
+                    macros.size() + (bartholomew.get_active_address() * -1));
+            } else if (bartholomew.get_active_address() > macros.size()) {
+                bartholomew.incrementAddress(
+                    (bartholomew.get_active_address() * -1) + 1);
+            }
+            bartholomew.updateDisplay(
+                macros[bartholomew.get_active_address() - 1]);
+        }
+        // first portable fusion reactor
         // Outtake is actual insanity please fix. It works I guess
         // I dare someone to find a more inefficient way to do this
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-            if (outtake.get_state() == Outtake::State::HOARD) {
-                outtake.move(Outtake::State::OFF);
+            if (outtake.get_state() == std::string("HOARD")) {
+                outtake.move(std::string("OFF"));
             } else {
-                outtake.move(Outtake::State::HOARD);
+                outtake.move(std::string("HOARD"));
             }
 
         } else if (master.get_digital_new_press(
                        pros::E_CONTROLLER_DIGITAL_L2)) {
-            if (outtake.get_state() == Outtake::State::BOTTOM) {
-                outtake.move(Outtake::State::OFF);
+            if (outtake.get_state() == std::string("BOTTOM")) {
+                outtake.move(std::string("OFF"));
             } else {
-                outtake.move(Outtake::State::BOTTOM);
+                outtake.move(std::string("BOTTOM"));
             }
         } else if (master.get_digital_new_press(
                        pros::E_CONTROLLER_DIGITAL_R1)) {
-            if (outtake.get_state() == Outtake::State::TOP) {
-                outtake.move(Outtake::State::OFF);
+            if (outtake.get_state() == std::string("TOP")) {
+                outtake.move(std::string("OFF"));
             } else {
-                outtake.move(Outtake::State::TOP);
+                outtake.move(std::string("TOP"));
             }
         } else if (master.get_digital_new_press(
                        pros::E_CONTROLLER_DIGITAL_R2)) {
-            if (outtake.get_state() == Outtake::State::MIDDLE) {
-                outtake.move(Outtake::State::OFF);
+            if (outtake.get_state() == std::string("MIDDLE")) {
+                outtake.move(std::string("OFF"));
             } else {
-                outtake.move(Outtake::State::MIDDLE);
+                outtake.move(std::string("MIDDLE"));
             }
         }
         // Toggle funny scrapers
@@ -270,5 +321,6 @@ void opcontrol() {
             double_park.toggle();
         }
         // std::cout << colorDetector.get_proximity() << '\n';
+        iteration++;
     }
 }
