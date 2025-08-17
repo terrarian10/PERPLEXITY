@@ -11,7 +11,6 @@
 #include "pros/optical.hpp"
 #include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
-#include <cstddef>
 #include <cstdlib>
 #include <vector>
 
@@ -228,7 +227,7 @@ void opcontrol() {
     // seperate lines
     pros::motor_brake_mode_e_t driver_preference_brake =
         pros::E_MOTOR_BRAKE_COAST;
-
+    bool canUpdateMacros;
     chassis.setBrakeMode(driver_preference_brake);
     int iteration = 0;
     // watch afshin implode the bot
@@ -261,20 +260,29 @@ void opcontrol() {
             bartholomew.activateMacro(
                 macros[bartholomew.get_active_address() - 1], isRed);
         }
+        // 9/10 programmers quit before finding a stupider method to achieve
+        // some non needed funciton
         if (std::abs(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) >
             115) {
-            bartholomew.incrementAddress(
-                std::abs(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) /
-                master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X));
-            if (bartholomew.get_active_address() < 1) {
+            if (canUpdateMacros) {
                 bartholomew.incrementAddress(
-                    macros.size() + (bartholomew.get_active_address() * -1));
-            } else if (bartholomew.get_active_address() > macros.size()) {
-                bartholomew.incrementAddress(
-                    (bartholomew.get_active_address() * -1) + 1);
+                    std::abs(
+                        master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) /
+                    master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X));
+                if (bartholomew.get_active_address() < 1) {
+                    bartholomew.incrementAddress(
+                        macros.size() +
+                        (bartholomew.get_active_address() * -1));
+                } else if (bartholomew.get_active_address() > macros.size()) {
+                    bartholomew.incrementAddress(
+                        (bartholomew.get_active_address() * -1) + 1);
+                }
+                bartholomew.updateDisplay(
+                    macros[bartholomew.get_active_address() - 1]);
+                canUpdateMacros = false;
             }
-            bartholomew.updateDisplay(
-                macros[bartholomew.get_active_address() - 1]);
+        } else {
+            canUpdateMacros = true;
         }
         // first portable fusion reactor
         // Outtake is actual insanity please fix. It works I guess

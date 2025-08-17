@@ -1,10 +1,7 @@
 #include "controller_data.hpp"
-#include "Outtake.hpp"
 #include "lemlib/chassis/chassis.hpp"
-#include "pros/misc.h"
 #include "pros/misc.hpp"
 #include <functional>
-#include <iterator>
 #include <vector>
 
 void ModularControl::updateDisplay(const macro& macro) {

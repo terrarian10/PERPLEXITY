@@ -14,7 +14,6 @@
 // Import unnecessary classes
 #include "Outtake.hpp"
 #include "lemlib/chassis/chassis.hpp"
-#include "pros/misc.h"
 #include "pros/misc.hpp"
 #include <cmath>
 #include <functional>
