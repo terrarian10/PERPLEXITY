@@ -7,12 +7,12 @@
  * This file should not be modified by users, since it gets replaced whenever
  * a kernel upgrade occurs.
  *
- * \copyright (c) 2017-2023, Purdue University ACM SIGBots.
+ * \copyright (c) 2017-2024, Purdue University ACM SIGBots.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- *
+ * 
  * \defgroup c-distance VEX Distance Sensor C API
  */
 
@@ -48,11 +48,11 @@ namespace c {
  * \param port The V5 Distance Sensor port number from 1-21
  * \return The distance value or PROS_ERR if the operation failed, setting
  * errno.
- *
+ * 
  * \b Example
  * \code
  * #define DISTANCE_PORT 1
- *
+ * 
  * void opcontrol() {
  *   while (true) {
  *     printf("Distance Value: %d mm\n", distance_get(DISTANCE_PORT));
@@ -78,15 +78,15 @@ int32_t distance_get(uint8_t port);
  * \param  port The V5 Distance Sensor port number from 1-21
  * \return The confidence value or PROS_ERR if the operation failed, setting
  * errno.
- *
+ * 
  * \b Example
  * \code
  * #define DISTANCE_PORT 1
- *
+ * 
  * void opcontrol() {
  *   while (true) {
- *     printf("Distance Confidence Value: %d\n",
- * distance_get_confidence(DISTANCE_PORT)); delay(20);
+ *     printf("Distance Confidence Value: %d\n", distance_get_confidence(DISTANCE_PORT));
+ *     delay(20);
  *   }
  * }
  * \endcode
@@ -108,15 +108,15 @@ int32_t distance_get_confidence(uint8_t port);
  * \param  port The V5 Distance Sensor port number from 1-21
  * \return The size value or PROS_ERR if the operation failed, setting
  * errno.
- *
+ * 
  * \b Example
  * \code
  * #define DISTANCE_PORT 1
- *
+ * 
  * void opcontrol() {
  *   while (true) {
- *     printf("Distance Object Size: %d\n",
- * distance_get_object_size(DISTANCE_PORT)); delay(20);
+ *     printf("Distance Object Size: %d\n", distance_get_object_size(DISTANCE_PORT));
+ *     delay(20);
  *   }
  * }
  * \endcode
@@ -134,15 +134,15 @@ int32_t distance_get_object_size(uint8_t port);
  * \param  port The V5 Distance Sensor port number from 1-21
  * \return The velocity value or PROS_ERR if the operation failed, setting
  * errno.
- *
+ * 
  * \b Example
  * \code
  * #define DISTANCE_PORT 1
- *
+ * 
  * void opcontrol() {
  *   while (true) {
- *     printf("Distance Object Velocity: %f\n",
- * distance_get_object_velocity(DISTANCE_PORT)); delay(20);
+ *     printf("Distance Object Velocity: %f\n", distance_get_object_velocity(DISTANCE_PORT));
+ *     delay(20);
  *   }
  * }
  * \endcode

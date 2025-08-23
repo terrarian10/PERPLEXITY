@@ -7,7 +7,7 @@
  * This file should not be modified by users, since it gets replaced whenever
  * a kernel upgrade occurs.
  *
- * \copyright (c) 2017-2023, Purdue University ACM SIGBots.
+ * \copyright (c) 2017-2024, Purdue University ACM SIGBots.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -41,35 +41,33 @@ namespace pros {
  * @brief Indicates IMU status.
  */
 typedef enum imu_status_e {
-    E_IMU_STATUS_READY = 0, // IMU is connected but not currently calibrating
-    /** The IMU is calibrating */
-    E_IMU_STATUS_CALIBRATING = 1,
-    /** Used to indicate that an error state was reached in the imu_get_status
-    function,\ not that the IMU is necessarily in an error state */
-    E_IMU_STATUS_ERROR = 0xFF,
+	E_IMU_STATUS_READY = 0,  // IMU is connected but not currently calibrating
+	/** The IMU is calibrating */
+	E_IMU_STATUS_CALIBRATING = 1,
+	/** Used to indicate that an error state was reached in the imu_get_status function,\
+	not that the IMU is necessarily in an error state */
+	E_IMU_STATUS_ERROR = 0xFF,
 } imu_status_e_t;
 
 typedef enum imu_orientation_e {
-    E_IMU_Z_UP = 0,   // IMU has the Z axis UP (VEX Logo facing DOWN)
-    E_IMU_Z_DOWN = 1, // IMU has the Z axis DOWN (VEX Logo facing UP)
-    E_IMU_X_UP = 2,   // IMU has the X axis UP
-    E_IMU_X_DOWN = 3, // IMU has the X axis DOWN
-    E_IMU_Y_UP = 4,   // IMU has the Y axis UP
-    E_IMU_Y_DOWN = 5, // IMU has the Y axis DOWN
-    E_IMU_ORIENTATION_ERROR =
-        0xFF // NOTE: used for returning an error from the
-             // get_physical_orientation function, not that the IMU is
-             // necessarily in an error state
+	E_IMU_Z_UP = 0,                 // IMU has the Z axis UP (VEX Logo facing DOWN)
+	E_IMU_Z_DOWN = 1,               // IMU has the Z axis DOWN (VEX Logo facing UP)
+	E_IMU_X_UP = 2,                 // IMU has the X axis UP
+	E_IMU_X_DOWN = 3,               // IMU has the X axis DOWN
+	E_IMU_Y_UP = 4,                 // IMU has the Y axis UP
+	E_IMU_Y_DOWN = 5,               // IMU has the Y axis DOWN
+	E_IMU_ORIENTATION_ERROR = 0xFF  // NOTE: used for returning an error from the get_physical_orientation function, not
+	                                // that the IMU is necessarily in an error state
 } imu_orientation_e_t;
 
 /**
  * \struct quaternion_s_t
  */
 typedef struct __attribute__((__packed__)) quaternion_s {
-    double x;
-    double y;
-    double z;
-    double w;
+	double x;
+	double y;
+	double z;
+	double w;
 } quaternion_s_t;
 
 /**
@@ -77,9 +75,9 @@ typedef struct __attribute__((__packed__)) quaternion_s {
  *
  */
 struct imu_raw_s {
-    double x;
-    double y;
-    double z;
+	double x;
+	double y;
+	double z;
 };
 
 /**
@@ -99,9 +97,9 @@ typedef struct imu_raw_s imu_accel_s_t;
  *
  */
 typedef struct __attribute__((__packed__)) euler_s {
-    double pitch;
-    double roll;
-    double yaw;
+	double pitch;
+	double roll;
+	double yaw;
 } euler_s_t;
 
 #ifdef __cplusplus
@@ -133,8 +131,7 @@ namespace c {
  * reached:
  * ENXIO - The given value is not within the range of V5 ports (1-21).
  * ENODEV - The port cannot be configured as an Inertial Sensor
- * EAGAIN - The sensor is already calibrating, or time out setting the status
- * flag.
+ * EAGAIN - The sensor is already calibrating, or time out setting the status flag.
  *
  * \param port
  *        The V5 Inertial Sensor port number from 1-21
@@ -174,8 +171,7 @@ int32_t imu_reset(uint8_t port);
  * reached:
  * ENXIO - The given value is not within the range of V5 ports (1-21).
  * ENODEV - The port cannot be configured as an Inertial Sensor
- * EAGAIN - The sensor is already calibrating, or time out setting the status
- * flag.
+ * EAGAIN - The sensor is already calibrating, or time out setting the status flag.
  *
  * \param port
  *        The V5 Inertial Sensor port number from 1-21
@@ -301,8 +297,8 @@ double imu_get_heading(uint8_t port);
  * void opcontrol() {
  *   while (true) {
  *     quaternion_s_t qt = imu_get_quaternion(IMU_PORT);
- *     printf("IMU quaternion: {x: %f, y: %f, z: %f, w: %f}\n", qt.x, qt.y,
- * qt.z, qt.w); delay(20);
+ *     printf("IMU quaternion: {x: %f, y: %f, z: %f, w: %f}\n", qt.x, qt.y, qt.z, qt.w);
+ *     delay(20);
  *   }
  * }
  * \endcode
@@ -331,8 +327,8 @@ quaternion_s_t imu_get_quaternion(uint8_t port);
  * void opcontrol() {
  *   while (true) {
  *     euler_s_t eu = imu_get_euler(IMU_PORT);
- *     printf("IMU euler angles: {pitch: %f, roll: %f, yaw: %f}\n", eu.pitch,
- * eu.roll, eu.yaw); delay(20);
+ *     printf("IMU euler angles: {pitch: %f, roll: %f, yaw: %f}\n", eu.pitch, eu.roll, eu.yaw);
+ *     delay(20);
  *   }
  * }
  * \endcode
@@ -473,8 +469,8 @@ int32_t imu_set_euler(uint8_t port, euler_s_t target);
  * void opcontrol() {
  *   while (true) {
  *     imu_accel_s_t accel = imu_get_accel(IMU_PORT);
- *     printf("IMU accel values: {x: %f, y: %f, z: %f}\n", accel.x, accel.y,
- * accel.z); delay(20);
+ *     printf("IMU accel values: {x: %f, y: %f, z: %f}\n", accel.x, accel.y, accel.z);
+ *     delay(20);
  *   }
  * }
  * \endcode
@@ -767,8 +763,7 @@ int32_t imu_tare(uint8_t port);
  * \param  port
  * 				 The V5 Inertial Sensor port number from 1-21
  * \param  target
- * 				 Target euler values for the euler values to be
- * set to
+ * 				 Target euler values for the euler values to be set to
  * \return 1 if the operation was successful or PROS_ERR if the operation
  * failed, setting errno.
  *
@@ -800,8 +795,7 @@ int32_t imu_set_euler(uint8_t port, euler_s_t target);
  * \param  port
  * 				 The V5 Inertial Sensor port number from 1-21
  * \param  target
- * 				 Target value for the rotation value to be set
- * to
+ * 				 Target value for the rotation value to be set to
  * \return 1 if the operation was successful or PROS_ERR if the operation
  * failed, setting errno.
  *
@@ -962,8 +956,7 @@ int32_t imu_set_yaw(uint8_t port, double target);
  *
  * \param  port
  * 				 The V5 Inertial Sensor port number from 1-21
- * \returns The orientation of the Inertial Sensor or PROS_ERR if an error
- * occured.
+ * \returns The orientation of the Inertial Sensor or PROS_ERR if an error occured.
  *
  */
 imu_orientation_e_t imu_get_physical_orientation(uint8_t port);
