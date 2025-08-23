@@ -17,7 +17,7 @@
 // Chassis constructor
 pros::MotorGroup left_motors({ 11, -1, -2 }, pros::MotorGearset::blue);
 pros::MotorGroup right_motors({ -20, 19, 10 }, pros::MotorGearset::blue);
-// Piggyback off of Purdues hard work
+// Piggyback off of purdues hard work
 lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               &right_motors, // right motor group
                               10.75,         // 10 inch track width
