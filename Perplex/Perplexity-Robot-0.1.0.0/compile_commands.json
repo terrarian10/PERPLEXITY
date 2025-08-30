@@ -1,0 +1,41 @@
+[
+    {
+        "arguments": [
+            "clang++",
+            "-c",
+            "-target",
+            "armv7ar-none-none-eabi",
+            "-isystem/home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1",
+            "-isystem/home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1/arm-none-eabi/thumb/v7-a+simd/hard",
+            "-isystem/home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1/backward",
+            "-isystem/home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/bin/../lib/gcc/arm-none-eabi/13.3.1/include",
+            "-isystem/home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/bin/../lib/gcc/arm-none-eabi/13.3.1/include-fixed",
+            "-isystem/home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include",
+            "-iquote./include",
+            "-iquote./include/./",
+            "-mcpu=cortex-a9",
+            "-mfpu=neon-fp16",
+            "-mfloat-abi=hard",
+            "-Os",
+            "-g",
+            "-mthumb",
+            "-D_POSIX_THREADS",
+            "-D_UNIX98_THREAD_MUTEX_ATTRIBUTES",
+            "-D_POSIX_TIMERS",
+            "-D_POSIX_MONOTONIC_CLOCK",
+            "-D_PROS_INCLUDE_LIBLVGL_LLEMU_H",
+            "-D_PROS_INCLUDE_LIBLVGL_LLEMU_HPP",
+            "-Wno-psabi",
+            "-ffunction-sections",
+            "-fdata-sections",
+            "-fdiagnostics-color",
+            "-funwind-tables",
+            "--std=gnu++23",
+            "-o",
+            "bin/main.cpp.o",
+            "src/main.cpp"
+        ],
+        "directory": "/home/corruptsive/PERPLEXITY/Perplex/Perplexity-Robot-0.1.0.0",
+        "file": "src/main.cpp"
+    }
+]
