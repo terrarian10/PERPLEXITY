@@ -7,17 +7,12 @@
 #include <vector>
 
 void Outtake::move(std::string state) {
-    std::cout << "Tasking" << std::endl;
-    std::cout << "Tasking" << std::endl;
-    std::cout << "Tasking" << std::endl;
-    std::cout << "Tasking" << std::endl;
 
     this->state = state;
     // if (task.get_count() > 0) task.remove();
-    std::cout << "Tasking" << std::endl;
+    //std::cout << "Tasking" << std::endl;
     // please dont explode I barely understand how this works
     task.remove();
-    std::cout << "Making Task" << std::endl;
     // 50/50 chance the task actually works
     task = pros::Task([this, state]() -> void { this->loop(state); },
                       mechHandler.taskID);
@@ -25,6 +20,9 @@ void Outtake::move(std::string state) {
 
 void Outtake::loop(std::string state) {
     uint32_t timer = 0;
+    if(state == "TOP_STORE"){
+        this->motors.at(2).move_relative(0, 12000);
+    }
     // Move motors differently depending on what needs to be done
     while (true) {
 
@@ -77,7 +75,10 @@ void Outtake::loop(std::string state) {
 };
 
 void Outtake::emergency(int delay, std::vector<single_control> override) {
+        std::cout << "EEE \n";
+
     task.suspend();
+    std::cout << "BRUH\n";
     for (const auto& r : override) {
         this->motors.at(r.motorID).move_velocity(r.moveMPL * 12000);
     }

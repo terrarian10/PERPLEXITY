@@ -21,11 +21,11 @@ class ColourDetector : public pros::Optical {
         std::function<bool(pros::Optical&)> detect_blue =
             [](pros::Optical& optical) -> bool {
             double hue = optical.get_hue();
-            return hue > 162 && hue < 290;
+            return hue > 100 && hue < 290;
         },
         std::function<bool(pros::Optical&)> detect_none =
             [](pros::Optical& optical) -> bool {
-            return optical.get_proximity() < 25;
+            return optical.get_proximity() < 20;
         })
         : pros::Optical(sensor)
         , detect_red(detect_red)

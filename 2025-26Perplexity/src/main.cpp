@@ -10,6 +10,7 @@
 #include "pros/motors.hpp"
 #include "pros/optical.hpp"
 #include "pros/rtos.hpp"
+#include "pros/screen.h"
 #include "robodash/api.h" // IWYU pragma: export
 #include <cstdlib>
 #include <vector>
@@ -26,7 +27,7 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               2    // horizontal drift is 2 (for now)
 );
 bool isRed;
-pros::Optical optical(11);
+pros::Optical optical(10);
 ColourDetector colorDetector(optical);
 
 // Initialize the Scraper
@@ -46,7 +47,8 @@ Outtake::mecha_control outtake_ctrl = {
     { { { { 0, -1 }, { 1, -1 }, { 2, -1 } }, std::string("TOP") },
       { { { 0, -1 }, { 1, 1 }, { 2, -1 } }, std::string("MIDDLE") },
       { { { 0, 1 }, { 1, 1 }, { 2, -1 } }, std::string("BOTTOM") },
-      { { { 0, -1 }, { 1, -1 }, { 2, 1 } }, std::string("HOARD") },
+      { { { 0, -1 }, { 1, -1 }, { 2, 1 } }, std::string("BOTTOM_STORE") },
+      { { { 0, -1 }, { 1, -1 }, { 2, 0 } }, std::string("TOP_STORE") },
       { { { 0, 0 }, { 1, 0 }, { 2, 0 } }, std::string("OFF") } },
     "Outtake"
 };
@@ -230,18 +232,20 @@ void opcontrol() {
     bool canUpdateMacros;
     chassis.setBrakeMode(driver_preference_brake);
     int iteration = 0;
+    bool isThingyPressed = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
     // watch afshin implode the bot
     while (true) {
-        std::cout << bartholomew.get_active_address() - 1 << "\n";
-        std::cout << std::abs(
-                         master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) /
-                         master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)
-                  << "\n";
+        // std::cout << bartholomew.get_active_address() - 1 << "\n";
+        // std::cout << std::abs(
+        //                  master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) /
+        //                  master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)
+        //           << "\n";
 
         if (colorDetector.get_color() == colorDetector.BLUE &&
             outtake.get_state() != std::string("OFF")) {
             std::cout << colorDetector.get_proximity() << std::endl;
-            outtake.emergency(350, { { 0, -1 }, { 0, 1 }, { 0, 1 } });
+
+            outtake.emergency(400, { { 0, -1 }, { 1, 1 }, { 2, 1 } });
         }
         if (iteration % 10 == 0) { master.clear(); }
         if (iteration % 5 == 0) {
@@ -284,14 +288,24 @@ void opcontrol() {
         } else {
             canUpdateMacros = true;
         }
+
+        
+        if(isThingyPressed != master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            //std::cout << "RUNNING \n";
+            if(outtake.get_state() == "BOTTOM_STORE"){
+                            std::cout << "FIX UR STUF \n";
+
+                outtake.move("TOP_STORE");
+            }
+        }
         // first portable fusion reactor
         // Outtake is actual insanity please fix. It works I guess
         // I dare someone to find a more inefficient way to do this
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-            if (outtake.get_state() == std::string("HOARD")) {
+            if (outtake.get_state() == std::string("TOP_STORE") || outtake.get_state() == std::string("BOTTOM_STORE")) {
                 outtake.move(std::string("OFF"));
             } else {
-                outtake.move(std::string("HOARD"));
+                outtake.move(std::string("BOTTOM_STORE"));
             }
 
         } else if (master.get_digital_new_press(
@@ -316,14 +330,14 @@ void opcontrol() {
                 outtake.move(std::string("MIDDLE"));
             }
         }
+
+
+        isThingyPressed = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
         // Toggle funny scrapers
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
             scraper.toggle();
         }
-        // Slammy attacher thingy
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
-            attacher.toggle();
-        }
+        // 
         // "Double-Park-Thingy" as I was told
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
             double_park.toggle();

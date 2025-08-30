@@ -5,8 +5,10 @@
 #include <vector>
 
 void ModularControl::updateDisplay(const macro& macro) {
-    std::cout << macro.representation << "\n\n";
+    // std::cout << macro.representation << "\n\n";
     controller.print(0, 0, macro.representation);
+        controller.print(1, 0, "TEST");
+
 }
 
 // I HAVE DECIDED ON THE MOST STUPID CONVOLUTED OVERPOWERED OVERENGINEERED
