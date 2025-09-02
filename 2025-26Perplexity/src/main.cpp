@@ -9,6 +9,7 @@
 #include "pros/motors.h"
 #include "pros/motors.hpp"
 #include "pros/optical.hpp"
+#include "pros/rotation.hpp"
 #include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
 #include <cstdlib>
@@ -26,7 +27,7 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               2    // horizontal drift is 2 (for now)
 );
 bool isRed;
-pros::Optical optical(11);
+pros::Optical optical(10);
 ColourDetector colorDetector(optical);
 
 // Initialize the Scraper
@@ -35,7 +36,8 @@ AirCylinder scraper('h');
 AirCylinder attacher('g');
 // Doubleparrk
 AirCylinder double_park('e');
-
+pros::IMU imu(19);
+pros::Rotation horizOdom();
 // Literally anything  is better than this method
 // Don't touch it it works
 pros::Motor outt_1(5, pros::MotorGearset::blue);
@@ -57,7 +59,7 @@ lemlib::OdomSensors sensors(
     nullptr, // vertical tracking wheel 2
     nullptr, // horizontal tracking wheel 1
     nullptr, // horizontal tracking wheel 2
-    nullptr  // imu
+    &imu  // imu
 );
 
 // Guess and check final boss
@@ -232,16 +234,11 @@ void opcontrol() {
     int iteration = 0;
     // watch afshin implode the bot
     while (true) {
-        std::cout << bartholomew.get_active_address() - 1 << "\n";
-        std::cout << std::abs(
-                         master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) /
-                         master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)
-                  << "\n";
 
-        if (colorDetector.get_color() == colorDetector.BLUE &&
+        if (colorDetector.get_color() == colorDetector.RED &&
             outtake.get_state() != std::string("OFF")) {
             std::cout << colorDetector.get_proximity() << std::endl;
-            outtake.emergency(350, { { 0, -1 }, { 0, 1 }, { 0, 1 } });
+            outtake.emergency(350, { { 1, -1 }, { 1, 1 }, { 1, 1 } });
         }
         if (iteration % 10 == 0) { master.clear(); }
         if (iteration % 5 == 0) {
