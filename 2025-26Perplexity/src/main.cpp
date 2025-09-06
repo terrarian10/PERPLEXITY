@@ -1,9 +1,10 @@
 #include "main.h"
-
 #include "Outtake.hpp"
 #include "airCylinder.hpp"
 #include "color_sort.hpp"
 #include "controller_data.hpp"
+#include "lemlib/chassis/chassis.hpp"
+#include "lemlib/chassis/trackingWheel.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
 #include "pros/motors.h"
@@ -16,8 +17,8 @@
 #include <vector>
 
 // Chassis constructor
-pros::MotorGroup left_motors({ 11, -1, -2 }, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({ -20, 19, 10 }, pros::MotorGearset::blue);
+pros::MotorGroup left_motors({ -4, -9,3 }, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({ -2, 13, 11 }, pros::MotorGearset::blue);
 // Piggyback off of purdues hard work
 lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               &right_motors, // right motor group
@@ -44,20 +45,26 @@ pros::Motor outt_1(5, pros::MotorGearset::blue);
 pros::Motor outt_2(6, pros::MotorGearset::green);
 pros::Motor outt_3(7, pros::MotorGearset::green);
 std::vector<pros::Motor> test = { outt_1, outt_2, outt_3 };
-Outtake::mecha_control outtake_ctrl = {
-    { { { { 0, -1 }, { 1, -1 }, { 2, -1 } }, std::string("TOP") },
-      { { { 0, -1 }, { 1, 1 }, { 2, -1 } }, std::string("MIDDLE") },
-      { { { 0, 1 }, { 1, 1 }, { 2, -1 } }, std::string("BOTTOM") },
-      { { { 0, -1 }, { 1, -1 }, { 2, 1 } }, std::string("HOARD") },
-      { { { 0, 0 }, { 1, 0 }, { 2, 0 } }, std::string("OFF") } },
+mecha_control outtake_ctrl = {
+    { { { { 0, -1 }, { 1, -1 }, { 2, -1 } }, Outt_States::TOP },
+      { { { 0, -1 }, { 1, 1 }, { 2, -1 } }, Outt_States::MIDDLE },
+      { { { 0, 1 }, { 1, 1 }, { 2, -1 } }, Outt_States::BOTTOM },
+      { { { 0, -1 }, { 1, -1 }, { 2, 1 } }, Outt_States::BOTTOM_STORE },
+      { { { 0, 0 }, { 1, 0 }, { 2, 0 } }, Outt_States::OFF },
+      { { { 0, -1 }, { 1, -1 }, { 2, 0 } }, Outt_States::TOP_STORE} },
     "Outtake"
 };
-Outtake outtake(test, colorDetector, outtake_ctrl, "OFF", 12000);
+Outtake outtake(test, colorDetector, outtake_ctrl, Outt_States::OFF, 12000);
+pros::Rotation horizontalEncoder(20);
+
+lemlib::TrackingWheel horizontal(&horizontalEncoder, lemlib::Omniwheel::NEW_275, -2);
+
+
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
     nullptr, // vertical tracking wheel 1, set to nullptr
     nullptr, // vertical tracking wheel 2
-    nullptr, // horizontal tracking wheel 1
+    &horizontal, // horizontal tracking wheel 1
     nullptr, // horizontal tracking wheel 2
     &imu  // imu
 );
@@ -65,9 +72,9 @@ lemlib::OdomSensors sensors(
 // Guess and check final boss
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(
-    20,  // proportional gain (kP)
+    10,  // proportional gain (kP)
     0,   // integral gain (kI)
-    80,  // derivative gain (kD)
+    3,  // derivative gain (kD)
     3,   // anti windup
     1,   // small error range, in inches
     100, // small error range timeout, in milliseconds
@@ -78,9 +85,9 @@ lemlib::ControllerSettings lateral_controller(
 
 // angular PID controller
 lemlib::ControllerSettings angular_controller(
-    4,   // proportional gain (kP)
+    2,   // proportional gain (kP)
     0,   // integral gain (kI)
-    29,  // derivative gain (kD)
+    10,  // derivative gain (kD)
     3,   // anti windup
     1,   // small error range, in degrees
     100, // small error range timeout, in milliseconds
@@ -234,9 +241,14 @@ void opcontrol() {
     int iteration = 0;
     // watch afshin implode the bot
     while (true) {
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
+        master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+        autonomous();
+        return;
+    } // Forcibly runs the autonomous, for debugging
 
         if (colorDetector.get_color() == colorDetector.RED &&
-            outtake.get_state() != std::string("OFF")) {
+            outtake.get_state() != Outt_States::OFF) {
             std::cout << colorDetector.get_proximity() << std::endl;
             outtake.emergency(350, { { 1, -1 }, { 1, 1 }, { 1, 1 } });
         }
@@ -285,42 +297,42 @@ void opcontrol() {
         // Outtake is actual insanity please fix. It works I guess
         // I dare someone to find a more inefficient way to do this
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-            if (outtake.get_state() == std::string("HOARD")) {
-                outtake.move(std::string("OFF"));
-            } else {
-                outtake.move(std::string("HOARD"));
+            if (outtake.get_state() == Outt_States::BOTTOM_STORE) {
+                outtake.run_at_state(Outt_States::TOP_STORE);
+            } else if(outtake.get_state() == Outt_States::TOP_STORE){
+                outtake.run_at_state(Outt_States::OFF);
+
+            }else {
+                outtake.run_at_state(Outt_States::BOTTOM_STORE);
             }
 
         } else if (master.get_digital_new_press(
                        pros::E_CONTROLLER_DIGITAL_L2)) {
-            if (outtake.get_state() == std::string("BOTTOM")) {
-                outtake.move(std::string("OFF"));
+            if (outtake.get_state() == Outt_States::BOTTOM) {
+                outtake.run_at_state(Outt_States::OFF);
             } else {
-                outtake.move(std::string("BOTTOM"));
+                outtake.run_at_state(Outt_States::BOTTOM);
             }
         } else if (master.get_digital_new_press(
                        pros::E_CONTROLLER_DIGITAL_R1)) {
-            if (outtake.get_state() == std::string("TOP")) {
-                outtake.move(std::string("OFF"));
+            if (outtake.get_state() == Outt_States::TOP) {
+                outtake.run_at_state(Outt_States::OFF);
             } else {
-                outtake.move(std::string("TOP"));
+                outtake.run_at_state(Outt_States::TOP);
             }
         } else if (master.get_digital_new_press(
                        pros::E_CONTROLLER_DIGITAL_R2)) {
-            if (outtake.get_state() == std::string("MIDDLE")) {
-                outtake.move(std::string("OFF"));
+            if (outtake.get_state() == Outt_States::MIDDLE) {
+                outtake.run_at_state(Outt_States::OFF);
             } else {
-                outtake.move(std::string("MIDDLE"));
+                outtake.run_at_state(Outt_States::MIDDLE);
             }
         }
         // Toggle funny scrapers
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
             scraper.toggle();
         }
-        // Slammy attacher thingy
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
-            attacher.toggle();
-        }
+        
         // "Double-Park-Thingy" as I was told
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
             double_park.toggle();

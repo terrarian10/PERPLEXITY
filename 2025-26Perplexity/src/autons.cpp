@@ -53,7 +53,12 @@ void auton_skills() {
 }
 
 // Individial side autons
-void autons_positive_red() {}
+void autons_positive_red() {
+        chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+
+    chassis.setPose(-166,-60,90);
+    chassis.moveToPose(-45, -60, 90, 5000);
+}
 
 void autons_positive_blue() {}
 

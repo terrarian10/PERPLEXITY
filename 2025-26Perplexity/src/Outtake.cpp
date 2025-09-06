@@ -6,24 +6,28 @@
 #include <cstdint>
 #include <vector>
 
-void Outtake::move(std::string state) {
-    std::cout << "Tasking" << std::endl;
-    std::cout << "Tasking" << std::endl;
-    std::cout << "Tasking" << std::endl;
-    std::cout << "Tasking" << std::endl;
+/*
+How to use Outtake
+move() loads the task
+run() runs the current task
 
-    this->state = state;
-    // if (task.get_count() > 0) task.remove();
-    std::cout << "Tasking" << std::endl;
+
+
+*/
+
+void Outtake::run() {
+
     // please dont explode I barely understand how this works
-    task.remove();
-    std::cout << "Making Task" << std::endl;
+    if (task.get_state() != pros::E_TASK_STATE_DELETED) {
+        task.remove();
+    }
+
     // 50/50 chance the task actually works
-    task = pros::Task([this, state]() -> void { this->loop(state); },
+    task = pros::Task([this]() -> void { this->loop(Outt_States(state)); },
                       mechHandler.taskID);
 };
 
-void Outtake::loop(std::string state) {
+void Outtake::loop(Outt_States) {
     uint32_t timer = 0;
     // Move motors differently depending on what needs to be done
     while (true) {
@@ -87,4 +91,10 @@ void Outtake::emergency(int delay, std::vector<single_control> override) {
                         // THAT IS IN TURN DEPENDING ON WATTAGE
                         // BECAUSE WHYYYYYY SO USE THAT TOO
     task.resume();
+}
+
+void Outtake::initialize(){
+    quit();
+    move(Outt_States::OFF);
+    run();
 }

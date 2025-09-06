@@ -13,15 +13,42 @@
 
 // Import unnecessary classes
 #include "color_sort.hpp"
+#include "modularSubsystem.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/motor_group.hpp"
+#include "pros/rtos.hpp"
 #include <string>
 #include <vector>
 
+
+enum Outt_States {
+    OFF = 0,
+    TOP = 1,
+    BOTTOM = 2,
+    MIDDLE = 3,
+    BOTTOM_STORE = 4,
+    TOP_STORE = 5
+};
+
+
+
+struct single_control {
+        int motorID;
+        int moveMPL;
+    };
+struct multi_control {
+        std::vector<single_control> soloCont;
+        Outt_States id;
+    };
+struct mecha_control {
+        std::vector<multi_control> motorHandling;
+        const char* taskID;
+    };
+
 // Setup class
-class Outtake {
+class Outtake : public subsystem {
   public:
-    // different states for the outtake
+    // different Outt_States for the outtake
     /**
      * @brief Code for an outtake object
      * @param outtake_mtrs The motors that control the outtake
@@ -30,45 +57,43 @@ class Outtake {
      */
     // Motorgroup is not motorgrouping
     // Should probably make it work but single motor 3 times ig
-    struct single_control {
-        int motorID;
-        int moveMPL;
-    };
-    struct multi_control {
-        std::vector<single_control> soloCont;
-        std::string id;
-    };
-    struct mecha_control {
-        std::vector<multi_control> motorHandling;
-        const char* taskID;
-    };
+    
     Outtake(std::vector<pros::Motor>& motors,
             ColourDetector colorDetector,
             mecha_control& mechHandler,
-            std::string state,
+            Outt_States state,
             const std::uint32_t RUNNING_VOLTAGE = 12000)
         : motors(motors)
         , colorDetector(colorDetector)
         , mechHandler(mechHandler)
         , state(state)
-        , RUNNING_VOLTAGE(RUNNING_VOLTAGE)
         , task(pros::Task([]() {}, mechHandler.taskID)) {
         move(state);
+        cfg().baseSpeed=RUNNING_VOLTAGE;
+        
     };
 
     // Initialize various functions and variables
-    void move(std::string state);
+    inline void move(int state) {this->state = Outt_States(state);};
     void emergency(int delay, std::vector<single_control> override);
 
-    std::string get_state() const { return state; }
+    void run() override;
+    inline void suspend() override {task.suspend();};
+    void initialize() override;
+    inline void quit() override {task.remove();};
+    inline void suspend_time(int time) override {task.suspend(); pros::delay(time); task.resume();};
+    inline void resume() override {task.resume();};
+    inline void run_at_state(int state){move(state);run();}
+    int get_state() const { return state; }
+    Outt_States get_state_enum() const { return state; }
+
 
   private:
     // Initialize various private variables
     pros::Task task;
-    std::uint32_t RUNNING_VOLTAGE;
-    std::string state;
+    Outt_States state;
     ColourDetector colorDetector;
     std::vector<pros::Motor> motors;
-    void loop(std::string state);
+    void loop(Outt_States state);
     mecha_control& mechHandler;
 };
