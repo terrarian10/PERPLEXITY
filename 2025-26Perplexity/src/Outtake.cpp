@@ -1,4 +1,5 @@
 #include "Outtake.hpp"
+#include "consts.h"
 #include "pros/rtos.h"
 #include "pros/rtos.hpp"
 #include <cassert>
@@ -18,9 +19,7 @@ run() runs the current task
 void Outtake::run() {
 
     // please dont explode I barely understand how this works
-    if (task.get_state() != pros::E_TASK_STATE_DELETED) {
-        task.remove();
-    }
+    if (task.get_state() != pros::E_TASK_STATE_DELETED) { task.remove(); }
 
     // 50/50 chance the task actually works
     task = pros::Task([this]() -> void { this->loop(Outt_States(state)); },
@@ -93,7 +92,7 @@ void Outtake::emergency(int delay, std::vector<single_control> override) {
     task.resume();
 }
 
-void Outtake::initialize(){
+void Outtake::initialize() {
     quit();
     move(Outt_States::OFF);
     run();

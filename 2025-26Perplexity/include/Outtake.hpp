@@ -13,6 +13,7 @@
 
 // Import unnecessary classes
 #include "color_sort.hpp"
+#include "consts.h"
 #include "modularSubsystem.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/motor_group.hpp"
@@ -20,30 +21,18 @@
 #include <string>
 #include <vector>
 
-
-enum Outt_States {
-    OFF = 0,
-    TOP = 1,
-    BOTTOM = 2,
-    MIDDLE = 3,
-    BOTTOM_STORE = 4,
-    TOP_STORE = 5
-};
-
-
-
 struct single_control {
-        int motorID;
-        int moveMPL;
-    };
+    int motorID;
+    int moveMPL;
+};
 struct multi_control {
-        std::vector<single_control> soloCont;
-        Outt_States id;
-    };
+    std::vector<single_control> soloCont;
+    Outt_States id;
+};
 struct mecha_control {
-        std::vector<multi_control> motorHandling;
-        const char* taskID;
-    };
+    std::vector<multi_control> motorHandling;
+    const char* taskID;
+};
 
 // Setup class
 class Outtake : public subsystem {
@@ -57,7 +46,7 @@ class Outtake : public subsystem {
      */
     // Motorgroup is not motorgrouping
     // Should probably make it work but single motor 3 times ig
-    
+
     Outtake(std::vector<pros::Motor>& motors,
             ColourDetector colorDetector,
             mecha_control& mechHandler,
@@ -69,24 +58,29 @@ class Outtake : public subsystem {
         , state(state)
         , task(pros::Task([]() {}, mechHandler.taskID)) {
         move(state);
-        cfg().baseSpeed=RUNNING_VOLTAGE;
-        
+        cfg().baseSpeed = RUNNING_VOLTAGE;
     };
 
     // Initialize various functions and variables
-    inline void move(int state) {this->state = Outt_States(state);};
+    inline void move(int state) { this->state = Outt_States(state); };
     void emergency(int delay, std::vector<single_control> override);
 
     void run() override;
-    inline void suspend() override {task.suspend();};
+    inline void suspend() override { task.suspend(); };
     void initialize() override;
-    inline void quit() override {task.remove();};
-    inline void suspend_time(int time) override {task.suspend(); pros::delay(time); task.resume();};
-    inline void resume() override {task.resume();};
-    inline void run_at_state(int state){move(state);run();}
+    inline void quit() override { task.remove(); };
+    inline void suspend_time(int time) override {
+        task.suspend();
+        pros::delay(time);
+        task.resume();
+    };
+    inline void resume() override { task.resume(); };
+    inline void run_at_state(int state) {
+        move(state);
+        run();
+    }
     int get_state() const { return state; }
     Outt_States get_state_enum() const { return state; }
-
 
   private:
     // Initialize various private variables

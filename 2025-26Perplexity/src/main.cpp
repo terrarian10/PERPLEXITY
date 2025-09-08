@@ -2,6 +2,7 @@
 #include "Outtake.hpp"
 #include "airCylinder.hpp"
 #include "color_sort.hpp"
+#include "consts.h"
 #include "controller_data.hpp"
 #include "lemlib/chassis/chassis.hpp"
 #include "lemlib/chassis/trackingWheel.hpp"
@@ -17,7 +18,7 @@
 #include <vector>
 
 // Chassis constructor
-pros::MotorGroup left_motors({ -4, -9,3 }, pros::MotorGearset::blue);
+pros::MotorGroup left_motors({ -4, -9, 3 }, pros::MotorGearset::blue);
 pros::MotorGroup right_motors({ -2, 13, 11 }, pros::MotorGearset::blue);
 // Piggyback off of purdues hard work
 lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
@@ -51,22 +52,23 @@ mecha_control outtake_ctrl = {
       { { { 0, 1 }, { 1, 1 }, { 2, -1 } }, Outt_States::BOTTOM },
       { { { 0, -1 }, { 1, -1 }, { 2, 1 } }, Outt_States::BOTTOM_STORE },
       { { { 0, 0 }, { 1, 0 }, { 2, 0 } }, Outt_States::OFF },
-      { { { 0, -1 }, { 1, -1 }, { 2, 0 } }, Outt_States::TOP_STORE} },
+      { { { 0, -1 }, { 1, -1 }, { 2, 0 } }, Outt_States::TOP_STORE } },
     "Outtake"
 };
 Outtake outtake(test, colorDetector, outtake_ctrl, Outt_States::OFF, 12000);
 pros::Rotation horizontalEncoder(20);
 
-lemlib::TrackingWheel horizontal(&horizontalEncoder, lemlib::Omniwheel::NEW_275, -2);
-
+lemlib::TrackingWheel horizontal(&horizontalEncoder,
+                                 lemlib::Omniwheel::NEW_275,
+                                 -2);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
-    nullptr, // vertical tracking wheel 1, set to nullptr
-    nullptr, // vertical tracking wheel 2
+    nullptr,     // vertical tracking wheel 1, set to nullptr
+    nullptr,     // vertical tracking wheel 2
     &horizontal, // horizontal tracking wheel 1
-    nullptr, // horizontal tracking wheel 2
-    &imu  // imu
+    nullptr,     // horizontal tracking wheel 2
+    &imu         // imu
 );
 
 // Guess and check final boss
@@ -74,7 +76,7 @@ lemlib::OdomSensors sensors(
 lemlib::ControllerSettings lateral_controller(
     10,  // proportional gain (kP)
     0,   // integral gain (kI)
-    3,  // derivative gain (kD)
+    3,   // derivative gain (kD)
     3,   // anti windup
     1,   // small error range, in inches
     100, // small error range timeout, in milliseconds
@@ -242,10 +244,10 @@ void opcontrol() {
     // watch afshin implode the bot
     while (true) {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
-        master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-        autonomous();
-        return;
-    } // Forcibly runs the autonomous, for debugging
+            master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+            autonomous();
+            return;
+        } // Forcibly runs the autonomous, for debugging
 
         if (colorDetector.get_color() == colorDetector.RED &&
             outtake.get_state() != Outt_States::OFF) {
@@ -299,10 +301,10 @@ void opcontrol() {
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
             if (outtake.get_state() == Outt_States::BOTTOM_STORE) {
                 outtake.run_at_state(Outt_States::TOP_STORE);
-            } else if(outtake.get_state() == Outt_States::TOP_STORE){
+            } else if (outtake.get_state() == Outt_States::TOP_STORE) {
                 outtake.run_at_state(Outt_States::OFF);
 
-            }else {
+            } else {
                 outtake.run_at_state(Outt_States::BOTTOM_STORE);
             }
 
@@ -332,7 +334,7 @@ void opcontrol() {
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
             scraper.toggle();
         }
-        
+
         // "Double-Park-Thingy" as I was told
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
             double_park.toggle();
