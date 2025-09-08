@@ -80,18 +80,19 @@ class Scheduler {
     };
 
     void move_to_back() {
-        schedule.emplace_back(schedule.front());
+        schedule.emplace_back(std::move(schedule.front()));
         schedule.front()->quit();
         schedule.pop_front();
     }
     void move_back(int amount) {
-        schedule.emplace(schedule.begin() + amount, schedule.front());
+        schedule.emplace(schedule.begin() + amount,
+                         std::move(schedule.front()));
         schedule.front()->quit();
 
         schedule.pop_front();
     }
     void move_to_front() {
-        schedule.emplace_front(schedule.back());
+        schedule.emplace_front(std::move(schedule.back()));
         schedule.back()->quit();
 
         schedule.pop_back();

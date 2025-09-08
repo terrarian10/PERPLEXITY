@@ -109,11 +109,11 @@ std::vector<ModularControl::macro> macros;
 // Create Controller
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 
-ModularControl bartholomew(chassis,
-                           master,
-                           outtake,
-                           1); // His name is bartholomew. Please respect
-                               // Bartholomew
+ModularControl displayHandler(chassis,
+                              master,
+                              outtake,
+                              1); // His name is displayHandler. Please respect
+                                  // displayHandler
 
 /**                                                                            \
  * Runs initialization code. This occurs as soon as the program is started.    \
@@ -225,121 +225,128 @@ namespace pros {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
+bool canUpdateMacros;
+
+void displayUpdater(int iteration) {
+    if (std::abs(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) > 115) {
+        if (canUpdateMacros) {
+            displayHandler.incrementAddress(
+                std::abs(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) /
+                master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X));
+            if (displayHandler.get_active_address() < 1) {
+                displayHandler.incrementAddress(
+                    macros.size() + (displayHandler.get_active_address() * -1));
+            } else if (displayHandler.get_active_address() > macros.size()) {
+                displayHandler.incrementAddress(
+                    (displayHandler.get_active_address() * -1) + 1);
+            }
+            displayHandler.updateDisplay(
+                macros[displayHandler.get_active_address() - 1]);
+            canUpdateMacros = false;
+        }
+    } else {
+        canUpdateMacros = true;
+    }
+    if (iteration % 10 == 0) { master.clear(); }
+    if (iteration % 5 == 0) {
+        displayHandler.updateDisplay(
+            macros[displayHandler.get_active_address() - 1]);
+    }
+}
+
+void runMacros() {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+        displayHandler.activateMacro(
+            macros[displayHandler.get_active_address() - 1], isRed);
+    }
+}
+
+void driveControl() {
+    //  Get how far the joysticks are moved
+    int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
+    int rightY = (master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
+    // make it TENK
+    chassis.tank(leftY, rightY);
+}
+
+void handleEjection() {
+    if (colorDetector.get_color() == colorDetector.RED &&
+        outtake.get_state() != Outt_States::OFF) {
+        outtake.emergency(350, { { 1, -1 }, { 1, 1 }, { 1, 1 } });
+    }
+}
+
+void handleOuttakeCont() {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+        if (outtake.get_state() == Outt_States::BOTTOM_STORE) {
+            outtake.run_at_state(Outt_States::TOP_STORE);
+        } else if (outtake.get_state() == Outt_States::TOP_STORE) {
+            outtake.run_at_state(Outt_States::OFF);
+
+        } else {
+            outtake.run_at_state(Outt_States::BOTTOM_STORE);
+        }
+
+    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+        if (outtake.get_state() == Outt_States::BOTTOM) {
+            outtake.run_at_state(Outt_States::OFF);
+        } else {
+            outtake.run_at_state(Outt_States::BOTTOM);
+        }
+    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
+        if (outtake.get_state() == Outt_States::TOP) {
+            outtake.run_at_state(Outt_States::OFF);
+        } else {
+            outtake.run_at_state(Outt_States::TOP);
+        }
+    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
+        if (outtake.get_state() == Outt_States::MIDDLE) {
+            outtake.run_at_state(Outt_States::OFF);
+        } else {
+            outtake.run_at_state(Outt_States::MIDDLE);
+        }
+    }
+}
+
+void handleControls() {
+    handleOuttakeCont();
+    // Toggle funny scrapers
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+        scraper.toggle();
+    }
+
+    // "Double-Park-Thingy" as I was told
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
+        double_park.toggle();
+    }
+}
 
 void opcontrol() {
-    bartholomew.updateDisplay(macros[bartholomew.get_active_address() - 1]);
+    // UpdateDisplay
+    displayHandler.updateDisplay(
+        macros[displayHandler.get_active_address() - 1]);
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
         master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
         autonomous();
         return;
-    } // Forcibly runs the autonomous, for debugging
+    }
 
-    // This is preference to what you like to drive on, because ofc it can be 2
-    // seperate lines
+    // Set Brake Mode
     pros::motor_brake_mode_e_t driver_preference_brake =
         pros::E_MOTOR_BRAKE_COAST;
-    bool canUpdateMacros;
+
     chassis.setBrakeMode(driver_preference_brake);
+
     int iteration = 0;
     // watch afshin implode the bot
     while (true) {
-        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
-            master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-            autonomous();
-            return;
-        } // Forcibly runs the autonomous, for debugging
 
-        if (colorDetector.get_color() == colorDetector.RED &&
-            outtake.get_state() != Outt_States::OFF) {
-            std::cout << colorDetector.get_proximity() << std::endl;
-            outtake.emergency(350, { { 1, -1 }, { 1, 1 }, { 1, 1 } });
-        }
-        if (iteration % 10 == 0) { master.clear(); }
-        if (iteration % 5 == 0) {
-            bartholomew.updateDisplay(
-                macros[bartholomew.get_active_address() - 1]);
-        }
-        //  Get how far the joysticks are moved
-        int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
-        int rightY = (master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
-        // make it TENK
-        chassis.tank(leftY, rightY);
-        // delay a small amount to prevent brain overload and improve timer
-        // accuracy
-        pros::delay(10); // Timer calculations and not making the brain into the
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
-            bartholomew.activateMacro(
-                macros[bartholomew.get_active_address() - 1], isRed);
-        }
-        // 9/10 programmers quit before finding a stupider method to achieve
-        // some non needed funciton
-        if (std::abs(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) >
-            115) {
-            if (canUpdateMacros) {
-                bartholomew.incrementAddress(
-                    std::abs(
-                        master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) /
-                    master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X));
-                if (bartholomew.get_active_address() < 1) {
-                    bartholomew.incrementAddress(
-                        macros.size() +
-                        (bartholomew.get_active_address() * -1));
-                } else if (bartholomew.get_active_address() > macros.size()) {
-                    bartholomew.incrementAddress(
-                        (bartholomew.get_active_address() * -1) + 1);
-                }
-                bartholomew.updateDisplay(
-                    macros[bartholomew.get_active_address() - 1]);
-                canUpdateMacros = false;
-            }
-        } else {
-            canUpdateMacros = true;
-        }
-        // first portable fusion reactor
-        // Outtake is actual insanity please fix. It works I guess
-        // I dare someone to find a more inefficient way to do this
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-            if (outtake.get_state() == Outt_States::BOTTOM_STORE) {
-                outtake.run_at_state(Outt_States::TOP_STORE);
-            } else if (outtake.get_state() == Outt_States::TOP_STORE) {
-                outtake.run_at_state(Outt_States::OFF);
-
-            } else {
-                outtake.run_at_state(Outt_States::BOTTOM_STORE);
-            }
-
-        } else if (master.get_digital_new_press(
-                       pros::E_CONTROLLER_DIGITAL_L2)) {
-            if (outtake.get_state() == Outt_States::BOTTOM) {
-                outtake.run_at_state(Outt_States::OFF);
-            } else {
-                outtake.run_at_state(Outt_States::BOTTOM);
-            }
-        } else if (master.get_digital_new_press(
-                       pros::E_CONTROLLER_DIGITAL_R1)) {
-            if (outtake.get_state() == Outt_States::TOP) {
-                outtake.run_at_state(Outt_States::OFF);
-            } else {
-                outtake.run_at_state(Outt_States::TOP);
-            }
-        } else if (master.get_digital_new_press(
-                       pros::E_CONTROLLER_DIGITAL_R2)) {
-            if (outtake.get_state() == Outt_States::MIDDLE) {
-                outtake.run_at_state(Outt_States::OFF);
-            } else {
-                outtake.run_at_state(Outt_States::MIDDLE);
-            }
-        }
-        // Toggle funny scrapers
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
-            scraper.toggle();
-        }
-
-        // "Double-Park-Thingy" as I was told
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
-            double_park.toggle();
-        }
-        // std::cout << colorDetector.get_proximity() << '\n';
+        displayUpdater(iteration); // Handles controller display
+        runMacros();               // Runs Macros
+        driveControl();            // Controls Chassis
+        handleEjection();          // Ejects incorrect color bloaks
+        handleControls();          // Handles mechanism controls
+        pros::delay(10);           // Timer calculations
         iteration++;
     }
 }

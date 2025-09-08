@@ -1,7 +1,7 @@
 #include "autons.hpp"
+#include "commandHandling.hpp"
 #include "main.h"
 #include "pros/rtos.h"
-#include "sequentialCommands.hpp"
 #include <cmath>
 #include <cstdint>
 #include <functional>
@@ -61,11 +61,11 @@ void autons_positive_red() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 
     chassis.setPose(-166_cm, -60_cm, 90);
-    autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -45_cm, -60_cm, 90 },
+    /*autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -45_cm, -60_cm, 90 },
                                        chassis);
     autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -10_cm, -10_cm, 225 },
-                                       chassis);
-    chassis.moveToPose(-45_cm, -60_cm, 90, 5000);
+                                       chassis);*/
+    // chassis.moveToPose(-45_cm, -60_cm, 90, 5000);
 }
 
 void autons_positive_blue() {}
