@@ -1,7 +1,9 @@
 #include "autons.hpp"
 #include "commandHandling.hpp"
+#include "lemlib/asset.hpp"
 #include "main.h"
 #include "pros/rtos.h"
+#include "pros/rtos.hpp"
 #include <cmath>
 #include <cstdint>
 #include <functional>
@@ -12,7 +14,7 @@ const int DRIVE_SPEED = 110;
 const int TURN_SPEED = 90;
 const int SWING_SPEED = 90;
 Scheduler autonSchedule;
-
+ASSET(auton_test_txt);
 void absTurn(double angle, bool blocking = true, int timeout = 750) {
     // std::cout << "theta:" << operator""_deg(angle)
     // << " new x:" << 1e5 * std::sin(operator""_deg(angle))
@@ -59,13 +61,36 @@ void auton_skills() {
 // Individial side autons
 void autons_positive_red() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+    chassis.setPose(-155_cm, -45_cm, 90);
+    chassis.turnToHeading(180, 100000);
 
-    chassis.setPose(-166_cm, -60_cm, 90);
-    /*autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -45_cm, -60_cm, 90 },
-                                       chassis);
-    autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -10_cm, -10_cm, 225 },
-                                       chassis);*/
+    // autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -45_cm, -60_cm, 90
+    // },
+    //                                    chassis);
+    // autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -17, -17, 225 },
+    // chassis); autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -36, -31,
+    // 225
+    // }, chassis);
+
+    // autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -56, -47, 270 },
+    // chassis); autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -86_cm, -121_cm, 270 }, chassis, true);
+
+    // chassis.moveToPose(-100_cm, -45_cm, 90, 5000);
+
     // chassis.moveToPose(-45_cm, -60_cm, 90, 5000);
+    // chassis.moveToPose(-30_cm, -45_cm, 225, 5000);
+    // chassis.moveToPose(-140_cm, -120_cm, 270, 5000);
+    // chassis.moveToPose(-90_cm, -120_cm, 270, 5000);
+
+    // chassis.turnToHeading(180, 5000);
+    // chassis.waitUntilDone();
+    // chassis.turnToHeading(360, 5000);
+
+    // while (true) {
+    //     autonSchedule.tick();
+    //     pros::delay(10);
+    // }
 }
 
 void autons_positive_blue() {}

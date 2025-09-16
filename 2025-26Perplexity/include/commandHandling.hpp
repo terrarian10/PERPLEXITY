@@ -39,14 +39,24 @@ class outtake_c : public command {
 
 class move_pose_c : public command {
   public:
-    explicit move_pose_c(lemlib::Pose pose, lemlib::Chassis& chassis)
+    explicit move_pose_c(lemlib::Pose pose,
+                         lemlib::Chassis& chassis,
+                         bool reversed = false)
         : chassis(chassis)
-        , pose(pose) {};
+        , pose(pose)
+        , started(false)
+        , reversed(reversed) {};
     bool run() override {
         if (!started) {
-            chassis.moveToPose(pose.x, pose.y, pose.theta, 5000);
+            chassis.moveToPose(pose.x,
+                               pose.y,
+                               pose.theta,
+                               5000,
+                               { .forwards = !reversed, .minSpeed = 60 });
             started = true;
+            return false;
         }
+        std::cout << !chassis.isInMotion() << "--ISINMOTION" << "\n";
         return !chassis.isInMotion();
     }
 
@@ -56,6 +66,28 @@ class move_pose_c : public command {
     lemlib::Chassis& chassis;
     lemlib::Pose pose;
     bool started;
+    bool reversed;
+};
+
+class wait_c : public command {
+  public:
+    explicit wait_c(int msec)
+        : time(msec)
+        , started(false)
+        , start_time(0) {};
+    bool run() override {
+        if (!started) {
+            started = true;
+
+            start_time = pros::millis();
+        }
+        return (pros::millis() - start_time) >= time;
+    }
+
+  private:
+    bool started;
+    int time;
+    int start_time;
 };
 
 class Scheduler {
@@ -71,10 +103,15 @@ class Scheduler {
     bool tick() {
         if (schedule.empty()) { return false; }
         command* cmd = schedule.front().get();
+        std::cout << "ticking" << "\n";
+        std::cout << schedule.size() << "\n";
+
         const bool done = cmd->run();
+
         if (done) {
             cmd->quit();
             schedule.pop_front();
+            master.rumble(".");
         }
         return !schedule.empty();
     };
@@ -111,4 +148,17 @@ class Scheduler {
 
   private:
     std::deque<std::unique_ptr<command>> schedule;
+};
+
+struct cmd {
+    class command;
+};
+
+cmd hello(wait_c);
+
+class interpreter {
+  public:
+    void interpret();
+
+  private:
 };

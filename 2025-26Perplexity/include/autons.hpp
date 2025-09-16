@@ -8,10 +8,10 @@
 [[nodiscard]] inline const constexpr long long    operator""_in  (unsigned long long inches)   { return inches; }
 [[nodiscard]] inline const constexpr long double  operator""_ft  (long double feet)            { return feet * 12; }
 [[nodiscard]] inline const constexpr long long    operator""_ft  (unsigned long long feet)     { return feet * 12; }
-[[nodiscard]] inline const constexpr long double  operator""_cm  (long double cm)              { return cm * 2.54; }
-[[nodiscard]] inline const constexpr long long    operator""_cm  (unsigned long long cm)       { return cm * 2.54; }
-[[nodiscard]] inline const constexpr long double  operator""_m   (long double m)               { return m / 0.0254; }
-[[nodiscard]] inline const constexpr long long    operator""_m   (unsigned long long m)        { return m / 0.0254; }
+[[nodiscard]] inline const constexpr long double  operator""_cm  (long double cm)              { return cm / 2.54; }
+[[nodiscard]] inline const constexpr long long    operator""_cm  (unsigned long long cm)       { return cm / 2.54; }
+[[nodiscard]] inline const constexpr long double  operator""_m   (long double m)               { return m * 39.37; }
+[[nodiscard]] inline const constexpr long long    operator""_m   (unsigned long long m)        { return m * 39.37; }
 
 [[nodiscard]] inline const constexpr long double  operator""_pi  (long double input)           { return input * 3.14159; } 
 [[nodiscard]] inline const constexpr long double  operator""_pi  (unsigned long long input)    { return input * 3.14159; }

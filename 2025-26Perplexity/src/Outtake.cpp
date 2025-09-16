@@ -38,7 +38,7 @@ void Outtake::loop(Outt_States) {
 
                 for (const auto& i : r.soloCont) {
 
-                    this->motors.at(i.motorID).move_velocity(i.moveMPL * 12000);
+                    this->motors.at(i.motorID).move_velocity(i.moveMPL * 6000);
                 }
             }
         }
