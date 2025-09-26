@@ -46,6 +46,7 @@ extern lemlib::Chassis chassis;
 extern Outtake outtake;
 extern AirCylinder scraper;
 extern AirCylinder attacher;
+extern AirCylinder descorer;
 
 #endif
 

@@ -19,14 +19,14 @@ run() runs the current task
 void Outtake::run() {
 
     // please dont explode I barely understand how this works
-    if (task.get_state() != pros::E_TASK_STATE_DELETED) { task.remove(); }
+    // if (task.get_state() != pros::E_TASK_STATE_DELETED) { task.remove(); }
 
     // 50/50 chance the task actually works
-    task = pros::Task([this]() -> void { this->loop(Outt_States(state)); },
-                      mechHandler.taskID);
+    if (task.get_state() == pros::E_TASK_STATE_INVALID ||
+        task.get_state() == pros::E_TASK_STATE_DELETED) {}
 };
 
-void Outtake::loop(Outt_States) {
+void Outtake::loop() {
     uint32_t timer = 0;
     // Move motors differently depending on what needs to be done
     while (true) {
@@ -35,10 +35,11 @@ void Outtake::loop(Outt_States) {
 
             if (state == r.id) {
                 // std::cout << r.id << "\n";
+                // std::cout << std::endl;
 
                 for (const auto& i : r.soloCont) {
 
-                    this->motors.at(i.motorID).move_velocity(i.moveMPL * 6000);
+                    this->motors.at(i.motorID).move_velocity(i.moveMPL * 10000);
                 }
             }
         }
@@ -50,23 +51,30 @@ void Outtake::loop(Outt_States) {
         //     //         // Wants ~pointers~ for some reason
         //     //         this->motors.at(0).mo->outtake_1.move_voltage(-1 *
         //     // RUNNING_VOLTAGE);
-        //     //         this->outtake_2.move_voltage(-1 * RUNNING_VOLTAGE);
-        //     //         this->outtake_3.move_voltage(-1 * RUNNING_VOLTAGE);
+        //     //         this->outtake_2.move_voltage(-1 *
+        //     RUNNING_VOLTAGE);
+        //     //         this->outtake_3.move_voltage(-1 *
+        //     RUNNING_VOLTAGE);
         //     //         break;
         //     //     case State::MIDDLE:
-        //     //         this->outtake_1.move_voltage(-1 * RUNNING_VOLTAGE);
+        //     //         this->outtake_1.move_voltage(-1 *
+        //     RUNNING_VOLTAGE);
         //     //         this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
-        //     //         this->outtake_3.move_voltage(-1 * RUNNING_VOLTAGE);
+        //     //         this->outtake_3.move_voltage(-1 *
+        //     RUNNING_VOLTAGE);
         //     //         break;
         //     //     case State::HOARD:
-        //     //         this->outtake_1.move_voltage(-1 * RUNNING_VOLTAGE);
-        //     //         this->outtake_2.move_voltage(-1 * RUNNING_VOLTAGE);
+        //     //         this->outtake_1.move_voltage(-1 *
+        //     RUNNING_VOLTAGE);
+        //     //         this->outtake_2.move_voltage(-1 *
+        //     RUNNING_VOLTAGE);
         //     //         this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
         //     //         break;
         //     //     case State::BOTTOM:
         //     //         this->outtake_1.move_voltage(1 * RUNNING_VOLTAGE);
         //     //         this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
-        //     //         this->outtake_3.move_voltage(-1 * RUNNING_VOLTAGE);
+        //     //         this->outtake_3.move_voltage(-1 *
+        //     RUNNING_VOLTAGE);
         //     //         break;
         //     //     case State::OFF:
 
@@ -93,7 +101,9 @@ void Outtake::emergency(int delay, std::vector<single_control> override) {
 }
 
 void Outtake::initialize() {
-    quit();
     move(Outt_States::OFF);
-    run();
+    task = pros::Task([this]() -> void { this->loop(); },
+                      TASK_PRIORITY_MIN,
+                      4096,
+                      mechHandler.taskID);
 }

@@ -32,13 +32,13 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
 bool isRed;
 pros::Optical optical(10);
 ColourDetector colorDetector(optical);
-
+pros::GPS gps(8, -0.140, -0.229);
 // Initialize the Scraper
 AirCylinder scraper('h');
 // Make attacher wirj
 AirCylinder attacher('g');
 // Doubleparrk
-AirCylinder double_park('a');
+AirCylinder descorer('a');
 pros::IMU imu(19);
 pros::Rotation horizOdom();
 // Literally anything  is better than this method
@@ -53,7 +53,9 @@ mecha_control outtake_ctrl = {
       { { { 0, 1 }, { 1, 1 }, { 2, -1 } }, Outt_States::BOTTOM },
       { { { 0, -1 }, { 1, -1 }, { 2, 1 } }, Outt_States::BOTTOM_STORE },
       { { { 0, 0 }, { 1, 0 }, { 2, 0 } }, Outt_States::OFF },
-      { { { 0, -1 }, { 1, -1 }, { 2, 0 } }, Outt_States::TOP_STORE } },
+      { { { 0, -1 }, { 1, -1 }, { 2, 0 } }, Outt_States::TOP_STORE },
+      { { { 0, 1 }, { 1, -1 }, { 2, -1 } }, Outt_States::UNJAM },
+      { { { 0, 1 }, { 1, 0 }, { 2, 0 } }, Outt_States::UNJAM_NO_RELEASE } },
     "Outtake"
 };
 Outtake outtake(test, colorDetector, outtake_ctrl, Outt_States::OFF, 6000);
@@ -78,25 +80,25 @@ lemlib::ControllerSettings lateral_controller(
     75,  // proportional gain (kP) - 55 60 65 70 75 80
     0,   // integral gain (kI)
     34,  // derivative gain (kD) -- 24 32 32 33 34 36
-    3,   // anti windup
-    1,   // small error range, in inches
-    100, // small error range timeout, in milliseconds
-    3,   // large error range, in inches
-    500, // large error range timeout, in milliseconds
-    20   // maximum acceleration (slew)
+    3,   // anti windup3
+    0.7, // small error range, in inches1
+    100, // small error range timeout, in milliseconds100
+    2,   // large error range, in inches3
+    500, // large error range timeout, in milliseconds500
+    20   // maximum acceleration (slew)20
 );
 
 // angular PID controller
 lemlib::ControllerSettings angular_controller(
-    6,  // proportional gain (kP) 5 6
-    0,  // integral gain (kI)
-    40, // derivative gain (kD) 14 27
-    0,  // anti windup - 3
-    0,  // small error range, in degrees - 1
-    0,  // small error range timeout, in milliseconds - 100
-    0,  // large error range, in degrees - 3
-    0,  // large error range timeout, in milliseconds - 500
-    0   // maximum acceleration (slew)
+    6,   // proportional gain (kP) 5 6
+    0,   // integral gain (kI)
+    40,  // derivative gain (kD) 14 27
+    3,   // anti windup - 3
+    1,   // small error range, in degrees - 1
+    100, // small error range timeout, in milliseconds - 100
+    3,   // large error range, in degrees - 3
+    500, // large error range timeout, in milliseconds - 500
+    0    // maximum acceleration (slew)
 );
 // create the chassis
 lemlib::Chassis chassis(drivetrain,         // drivetrain settings
@@ -125,10 +127,11 @@ ModularControl displayHandler(chassis,
 
 // It looks nice
 rd::Selector selector({
+    { "autons_negative_red", autons_negative_red },
+
     { "autons_positive_red", autons_positive_red },
 
     { "auton_skills", auton_skills },
-    { "autons_negative_red", autons_negative_red },
     { "autons_positive_blue", autons_positive_blue },
 
     { "autons_negative_blue", autons_negative_blue },
@@ -152,7 +155,11 @@ void initialize() {
     outt_1.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     initialize_macros();
     selector.next_auton();
-    // Initialize chassis and macros
+    outtake.initialize();
+    chassis.setPose(
+        gps.get_position_x() * 39.37, gps.get_position_y() * 39.37, 0);
+
+    //  Initialize chassis and macros
     master.rumble(".");
 }
 
@@ -290,7 +297,7 @@ void handleOuttakeCont() {
             outtake.run_at_state(Outt_States::BOTTOM_STORE);
         }
 
-    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
         if (outtake.get_state() == Outt_States::BOTTOM) {
             outtake.run_at_state(Outt_States::OFF);
         } else {
@@ -308,6 +315,12 @@ void handleOuttakeCont() {
         } else {
             outtake.run_at_state(Outt_States::MIDDLE);
         }
+    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+        if (outtake.get_state() == Outt_States::UNJAM) {
+            outtake.run_at_state(Outt_States::OFF);
+        } else {
+            outtake.run_at_state(Outt_States::UNJAM);
+        }
     }
 }
 
@@ -320,7 +333,7 @@ void handleControls() {
 
     // "Double-Park-Thingy" as I was told
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
-        double_park.toggle();
+        descorer.toggle();
     }
 }
 
@@ -346,15 +359,15 @@ void opcontrol() {
     while (true) {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-            autons_positive_red();
+            autons_negative_red();
             return;
         }
-        // displayUpdater(iteration); // Handles controller display
+        displayUpdater(iteration); // Handles controller display
         // runMacros();               // Runs Macros
-        // driveControl();            // Controls Chassis
-        // handleEjection();          // Ejects incorrect color bloaks
-        // handleControls();          // Handles mechanism controls
-        // pros::delay(10);           // Timer calculations
-        // iteration++;
+        driveControl(); // Controls Chassis
+        // handleEjection(); // Ejects incorrect color bloaks
+        handleControls(); // Handles mechanism controls
+        pros::delay(10);  // Timer calculations
+        iteration++;
     }
 }

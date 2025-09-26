@@ -1,13 +1,17 @@
 #include "autons.hpp"
 #include "commandHandling.hpp"
+#include "consts.h"
 #include "lemlib/asset.hpp"
+#include "logger.hpp"
 #include "main.h"
+#include "pros/motors.h"
 #include "pros/rtos.h"
 #include "pros/rtos.hpp"
 #include <cmath>
 #include <cstdint>
 #include <functional>
 #include <iostream>
+#include <sstream>
 
 // These are out of 127
 const int DRIVE_SPEED = 110;
@@ -60,41 +64,178 @@ void auton_skills() {
 
 // Individial side autons
 void autons_positive_red() {
+    int iteration = pros::millis();
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-    chassis.setPose(-155_cm, -45_cm, 90);
-    chassis.turnToHeading(180, 100000);
+    chassis.setPose(-156_cm, -42.6_cm, 90);
+    // chassis.setPose(chassis.getPose().x, chassis.getPose().y, 90);
+    //  Go to short goal
+    autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -90_cm, -42.6_cm, 90 },
+                                       chassis);
+    autonSchedule.enqueue<wait_c>(500);
+    autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM_STORE, outtake);
+    autonSchedule.enqueue<wait_c>(0);
+    autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -50_cm, -50_cm, 45 },
+                                       chassis);
+    autonSchedule.enqueue<outtake_c>(Outt_States::OFF, outtake);
 
-    // autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -45_cm, -60_cm, 90
-    // },
+    autonSchedule.enqueue<wait_c>(500);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -25_cm, -25_cm, 45 }, chassis, false);
+    autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM, outtake);
+
+    autonSchedule.enqueue<wait_c>(2000); // Wait to like outtake
+                                         // Go to matchload
+    autonSchedule.enqueue<outtake_c>(Outt_States::OFF, outtake);
+
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -30, -25, 45 }, chassis, true);
+    // autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -124_cm, -120_cm, 270 },
     //                                    chassis);
-    // autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -17, -17, 225 },
-    // chassis); autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -36, -31,
-    // 225
-    // }, chassis);
+    // autonSchedule.enqueue<togglePneu_c>(scraper); // Toggle Scraper
 
-    // autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -56, -47, 270 },
-    // chassis); autonSchedule.enqueue<move_pose_c>(
-    //     lemlib::Pose{ -86_cm, -121_cm, 270 }, chassis, true);
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -144_cm, -124_cm, 270 },
+    //     chassis); // Goes to like the match load thingimabober
+    // autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM_STORE, outtake);
+
+    // autonSchedule.enqueue<wait_c>(2000);
+    // autonSchedule.enqueue<outtake_c>(Outt_States::OFF, outtake);
+    // autonSchedule.enqueue<togglePneu_c>(scraper); // Toggle Scraper
+
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -60_cm, -116_cm, 270 }, chassis, true);
+    // autonSchedule.enqueue<wait_c>(1500);
+
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -100_cm, -157_cm, 270 }, chassis, false);
+    // autonSchedule.enqueue<togglePneu_c>(descorer);
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -10_cm, -157_cm, 270 }, chassis, true);
 
     // chassis.moveToPose(-100_cm, -45_cm, 90, 5000);
+    // outtake.run_at_state(Outt_States::BOTTOM);
 
     // chassis.moveToPose(-45_cm, -60_cm, 90, 5000);
-    // chassis.moveToPose(-30_cm, -45_cm, 225, 5000);
-    // chassis.moveToPose(-140_cm, -120_cm, 270, 5000);
-    // chassis.moveToPose(-90_cm, -120_cm, 270, 5000);
+    //  chassis.moveToPose(-30_cm, -45_cm, 225, 5000);
+    //  chassis.moveToPose(-140_cm, -120_cm, 270, 5000);
+    //  chassis.moveToPose(-90_cm, -120_cm, 270, 5000);
 
     // chassis.turnToHeading(180, 5000);
     // chassis.waitUntilDone();
     // chassis.turnToHeading(360, 5000);
 
-    // while (true) {
-    //     autonSchedule.tick();
-    //     pros::delay(10);
-    // }
+    while (autonSchedule.tick()) {
+        pros::delay(10);
+        // std::cout << chassis.getPose().x << std::endl;
+    }
+    std::cout << double(pros::millis() - iteration) / 1000 << std::endl;
 }
 
 void autons_positive_blue() {}
 
-void autons_negative_red() {}
+void autons_negative_red() {
+    int iteration = pros::millis();
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+    chassis.setPose(-160_cm, 47_cm, 90);
+    // chassis.setPose(chassis.getPose().x, chassis.getPose().y, 90);
+    //  Go to short goal
+    autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -84_cm, 56_cm, 90 },
+                                       chassis);
+
+    autonSchedule.enqueue<wait_c>(400);
+    autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM_STORE, outtake);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -40_cm, 56_cm, 90 }, chassis, false, 40, 60);
+    autonSchedule.enqueue<wait_c>(200);
+
+    autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -42_cm, 38_cm, 135 },
+                                       chassis);
+    // autonSchedule.enqueue<outtake_c>(Outt_States::OFF, outtake);
+
+    // autonSchedule.enqueue<wait_c>(200);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -37_cm, 35_cm, 140 }, chassis, false, 40);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -37_cm, 35_cm, 140 }, chassis, false, 40);
+    autonSchedule.enqueue<wait_c>(200);
+    autonSchedule.enqueue<outtake_c>(Outt_States::UNJAM_NO_RELEASE, outtake);
+    autonSchedule.enqueue<wait_c>(250);
+    autonSchedule.enqueue<outtake_c>(Outt_States::MIDDLE, outtake);
+    autonSchedule.enqueue<wait_c>(3000); // Wait to like outtake
+                                         // Go to matchload
+
+    autonSchedule.enqueue<outtake_c>(Outt_States::OFF, outtake);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -44_cm, 44_cm, 140 }, chassis, true);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -100_cm, 92_cm, 140 }, chassis, true);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -110_cm, 120_cm, 270 }, chassis, false);
+    autonSchedule.enqueue<togglePneu_c>(scraper);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -166.8_cm, 120_cm, 270 }, chassis, false);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -166.8_cm, 120_cm, 270 }, chassis, false, 60);
+    autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM_STORE, outtake);
+    autonSchedule.enqueue<wait_c>(2000); // Wait to like intake
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -80_cm, 115_cm, 270 }, chassis, true);
+    autonSchedule.enqueue<outtake_c>(Outt_States::UNJAM_NO_RELEASE, outtake);
+    autonSchedule.enqueue<wait_c>(250);
+    autonSchedule.enqueue<outtake_c>(Outt_States::TOP, outtake);
+    autonSchedule.enqueue<wait_c>(3000);
+    autonSchedule.enqueue<outtake_c>(Outt_States::OFF, outtake);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -140_cm, 85_cm, 270 }, chassis, false);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -140_cm, 97_cm, 270 }, chassis, false);
+    autonSchedule.enqueue<togglePneu_c>(descorer);
+    autonSchedule.enqueue<move_pose_c>(
+        lemlib::Pose{ -40_cm, 98_cm, 270 }, chassis, true);
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -30, -25, 45 }, chassis, true);
+    // autonSchedule.enqueue<move_pose_c>(lemlib::Pose{ -124_cm, -120_cm, 270 },
+    //                                    chassis);
+    // autonSchedule.enqueue<togglePneu_c>(scraper); // Toggle Scraper
+
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -144_cm, -124_cm, 270 },
+    //     chassis); // Goes to like the match load thingimabober
+    // autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM_STORE, outtake);
+
+    // autonSchedule.enqueue<wait_c>(2000);
+    // autonSchedule.enqueue<outtake_c>(Outt_States::OFF, outtake);
+    // autonSchedule.enqueue<togglePneu_c>(scraper); // Toggle Scraper
+
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -60_cm, -116_cm, 270 }, chassis, true);
+    // autonSchedule.enqueue<wait_c>(1500);
+
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -100_cm, -157_cm, 270 }, chassis, false);
+    // autonSchedule.enqueue<togglePneu_c>(descorer);
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ -10_cm, -157_cm, 270 }, chassis, true);
+
+    // chassis.moveToPose(-100_cm, -45_cm, 90, 5000);
+    // outtake.run_at_state(Outt_States::BOTTOM);
+
+    // chassis.moveToPose(-45_cm, -60_cm, 90, 5000);
+    //  chassis.moveToPose(-30_cm, -45_cm, 225, 5000);
+    //  chassis.moveToPose(-140_cm, -120_cm, 270, 5000);
+    //  chassis.moveToPose(-90_cm, -120_cm, 270, 5000);
+
+    // chassis.turnToHeading(180, 5000);
+    // chassis.waitUntilDone();
+    // chassis.turnToHeading(360, 5000);
+
+    while (autonSchedule.tick()) {
+        pros::delay(10);
+        // std::cout << chassis.getPose().x << std::endl;
+    }
+    std::cout << double(pros::millis() - iteration) / 1000 << std::endl;
+    std::cout << chassis.getPose().x * 2.54 << std::endl;
+    std::cout << chassis.getPose().y * 2.54 << std::endl;
+}
 
 void autons_negative_blue() {}

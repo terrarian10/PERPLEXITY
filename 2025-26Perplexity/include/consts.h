@@ -6,5 +6,7 @@ enum Outt_States {
     BOTTOM = 2,
     MIDDLE = 3,
     BOTTOM_STORE = 4,
-    TOP_STORE = 5
+    TOP_STORE = 5,
+    UNJAM = 6,
+    UNJAM_NO_RELEASE = 7
 };

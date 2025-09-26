@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Outtake.hpp"
+#include "airCylinder.hpp"
 #include "consts.h"
 #include "lemlib/chassis/chassis.hpp"
 #include "main.h"
@@ -26,8 +27,13 @@ class outtake_c : public command {
         : state_(state)
         , outtake_(outtake) {};
     bool run() override {
-        outtake_.run_at_state(state_);
-        return true;
+
+        outtake_.move(state_);
+        if (outtake_.get_state() == state_) {
+            return true;
+        } else {
+            return false;
+        }
     }
     void quit() override {}
     void force_quit() override {}
@@ -37,27 +43,54 @@ class outtake_c : public command {
     Outt_States state_;
 };
 
+class togglePneu_c : public command {
+  public:
+    explicit togglePneu_c(AirCylinder& air)
+        : air(air) {};
+    bool run() override {
+        air.toggle();
+        return true;
+    }
+    void quit() override {}
+    void force_quit() override {}
+
+  private:
+    AirCylinder& air;
+};
+
 class move_pose_c : public command {
   public:
     explicit move_pose_c(lemlib::Pose pose,
                          lemlib::Chassis& chassis,
-                         bool reversed = false)
+                         bool reversed = false,
+                         float minSpeed = 40,
+                         float maxSpeed = 120)
         : chassis(chassis)
         , pose(pose)
         , started(false)
-        , reversed(reversed) {};
+        , reversed(reversed)
+        , minSpeed(minSpeed)
+        , maxSpeed(maxSpeed) {};
     bool run() override {
         if (!started) {
             chassis.moveToPose(pose.x,
                                pose.y,
                                pose.theta,
                                5000,
-                               { .forwards = !reversed, .minSpeed = 60 });
+                               {
+                                   .forwards = !reversed,
+                                   .horizontalDrift = 8,
+                                   .maxSpeed = maxSpeed,
+
+                                   .minSpeed = minSpeed,
+                                   .earlyExitRange = 0.40,
+                               });
             started = true;
             return false;
         }
-        std::cout << !chassis.isInMotion() << "--ISINMOTION" << "\n";
         return !chassis.isInMotion();
+        // std::cout << chassis.getPose().x << " " << chassis.getPose().y
+        //           << "--POSITION" << "\n";
     }
 
     void force_quit() override { chassis.cancelMotion(); }
@@ -67,6 +100,8 @@ class move_pose_c : public command {
     lemlib::Pose pose;
     bool started;
     bool reversed;
+    float minSpeed;
+    float maxSpeed;
 };
 
 class wait_c : public command {
@@ -103,25 +138,28 @@ class Scheduler {
     bool tick() {
         if (schedule.empty()) { return false; }
         command* cmd = schedule.front().get();
-        std::cout << "ticking" << "\n";
-        std::cout << schedule.size() << "\n";
+        // std::cout << "ticking" << "\n";
+        // std::cout << schedule.size() << "\n";
 
         const bool done = cmd->run();
 
         if (done) {
             cmd->quit();
             schedule.pop_front();
-            master.rumble(".");
+            std::cout << "popit " << schedule.size() << std::endl;
+            std::cout << "empty? " << schedule.empty() << std::endl;
         }
         return !schedule.empty();
     };
 
     void move_to_back() {
+        if (schedule.empty()) return;
         schedule.emplace_back(std::move(schedule.front()));
         schedule.front()->quit();
         schedule.pop_front();
     }
     void move_back(int amount) {
+
         schedule.emplace(schedule.begin() + amount,
                          std::move(schedule.front()));
         schedule.front()->quit();

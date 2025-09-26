@@ -62,13 +62,13 @@ class Outtake : public subsystem {
     };
 
     // Initialize various functions and variables
-    inline void move(int state) { this->state = Outt_States(state); };
+    void move(int state) { this->state = Outt_States(state); };
     void emergency(int delay, std::vector<single_control> override);
 
     void run() override;
     inline void suspend() override { task.suspend(); };
     void initialize() override;
-    inline void quit() override { task.remove(); };
+    // inline void quit() override { task.remove(); };
     inline void suspend_time(int time) override {
         task.suspend();
         pros::delay(time);
@@ -88,6 +88,6 @@ class Outtake : public subsystem {
     Outt_States state;
     ColourDetector colorDetector;
     std::vector<pros::Motor> motors;
-    void loop(Outt_States state);
+    void loop();
     mecha_control& mechHandler;
 };
