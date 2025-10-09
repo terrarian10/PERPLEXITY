@@ -35,3 +35,4 @@ void autons_positive_red();
 void autons_positive_blue();
 void autons_negative_red();
 void autons_negative_blue();
+void auton_one_side(float mx, float my);

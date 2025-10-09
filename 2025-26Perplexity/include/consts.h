@@ -10,3 +10,11 @@ enum Outt_States {
     UNJAM = 6,
     UNJAM_NO_RELEASE = 7
 };
+
+struct poseCFG {
+    bool reversed = false;
+    int minSpeed = 40;
+    int maxSpeed = 120;
+    int timeout = 5000;
+    float earlyExitRange = 0.2;
+};

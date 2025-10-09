@@ -5,7 +5,7 @@
     "target": "v5",
     "templates": {
       "LemLib": {
-        "location": "/home/dylan/.config/pros/templates/LemLib@0.5.4",
+        "location": "/home/corruptsive/.config/pros/templates/LemLib@0.5.6/",
         "metadata": {
           "origin": "LemLib"
         },

@@ -81,9 +81,9 @@ lemlib::ControllerSettings lateral_controller(
     0,   // integral gain (kI)
     34,  // derivative gain (kD) -- 24 32 32 33 34 36
     3,   // anti windup3
-    0.7, // small error range, in inches1
+    0.5, // small error range, in inches1
     100, // small error range timeout, in milliseconds100
-    2,   // large error range, in inches3
+    1,   // large error range, in inches3
     500, // large error range timeout, in milliseconds500
     20   // maximum acceleration (slew)20
 );
@@ -125,9 +125,11 @@ ModularControl displayHandler(chassis,
  * to keep execution time for this mode under a few seconds.                   \
  */
 
+void aut_neg_red() { auton_one_side(-1, 1); }
+
 // It looks nice
 rd::Selector selector({
-    { "autons_negative_red", autons_negative_red },
+    { "autons_negative_red", aut_neg_red },
 
     { "autons_positive_red", autons_positive_red },
 
@@ -200,7 +202,7 @@ void competition_initialize() {
  */
 void autonomous() {
     // Set the break mode for the autonomous
-    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 
     // run auton selector
     // watch code implode
@@ -292,11 +294,9 @@ void handleOuttakeCont() {
             outtake.run_at_state(Outt_States::TOP_STORE);
         } else if (outtake.get_state() == Outt_States::TOP_STORE) {
             outtake.run_at_state(Outt_States::OFF);
-
         } else {
             outtake.run_at_state(Outt_States::BOTTOM_STORE);
         }
-
     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
         if (outtake.get_state() == Outt_States::BOTTOM) {
             outtake.run_at_state(Outt_States::OFF);
@@ -359,7 +359,7 @@ void opcontrol() {
     while (true) {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-            autons_negative_red();
+            aut_neg_red();
             return;
         }
         displayUpdater(iteration); // Handles controller display
