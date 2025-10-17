@@ -4,6 +4,7 @@
 #include "airCylinder.hpp"
 #include "autons.hpp"
 #include "consts.h"
+#include "gps.hpp"
 #include "lemlib/chassis/chassis.hpp"
 #include "lemlib/pose.hpp"
 #include "main.h"
@@ -234,11 +235,12 @@ class Scheduler {
         if (done) {
             cmd->quit();
             schedule.pop_front();
-            std::cout << "popit " << schedule.size()
+            // gpsRefinerTask(gps);
+            std::cout << "Removed. At Size: " << schedule.size()
                       << " AT: " << chassis.getPose().x * 2.54 << " "
                       << chassis.getPose().y * 2.54 << " "
-                      << chassis.getPose().theta << "Degrees" << std::endl;
-            std::cout << "empty? " << schedule.empty() << std::endl;
+                      << chassis.getPose().theta << "Degrees" << std::endl
+                      << outtake.log();
         }
         return !schedule.empty();
     };

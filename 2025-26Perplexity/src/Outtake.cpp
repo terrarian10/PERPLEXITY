@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 /*
@@ -39,7 +40,7 @@ void Outtake::loop() {
 
                 for (const auto& i : r.soloCont) {
 
-                    this->motors.at(i.motorID).move_velocity(i.moveMPL * 10000);
+                    this->motors.at(i.motorID).move_voltage(i.moveMPL * 12000);
                 }
             }
         }
@@ -106,4 +107,15 @@ void Outtake::initialize() {
                       TASK_PRIORITY_MIN,
                       4096,
                       mechHandler.taskID);
+}
+
+std::string Outtake::log() {
+    std::string temps;
+    for (const auto& i : this->motors) {
+
+        temps = temps + "MOTORPORT: " + std::to_string(i.get_port()) +
+                " OVERTEMP: " + std::to_string(i.is_over_temp()) + "\n";
+    }
+
+    return temps;
 }

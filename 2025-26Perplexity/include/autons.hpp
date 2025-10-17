@@ -30,9 +30,9 @@
 
 extern lemlib::Chassis chassis;
 
-void auton_skills();
+void auton_skills(float mx, float my);
 void autons_positive_red();
 void autons_positive_blue();
 void autons_negative_red();
 void autons_negative_blue();
-void auton_one_side(float mx, float my);
+void auton_one_side(float mx, float my, bool doSkills = false);

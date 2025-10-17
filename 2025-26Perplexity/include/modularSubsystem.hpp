@@ -22,35 +22,25 @@
 #include <string>
 #include <vector>
 
-struct subCFG{
+struct subCFG {
     int baseSpeed = 12000;
-    
 };
 
-class subsystem{
-    public:
-        
-        virtual ~subsystem() = default;
-        virtual void initialize(){
+class subsystem {
+  public:
+    virtual ~subsystem() = default;
+    virtual void initialize() {}
+    virtual void run() {}
+    virtual void quit() {}
 
-        }
-        virtual void run(){
+    virtual void suspend_time(int) {}
+    virtual void suspend() {}
+    virtual void resume() {}
 
-        }
-        virtual void quit(){
+    virtual std::string log() { return ""; }
 
-        }
-
-        virtual void suspend_time(int){
-        }
-        virtual void suspend(){
-        }
-        virtual void resume(){
-        }
-
-        
-    protected:
-        subCFG config;
-        subCFG& cfg() { return config; }
-        const subCFG& cfg() const { return config; }
+  protected:
+    subCFG config;
+    subCFG& cfg() { return config; }
+    const subCFG& cfg() const { return config; }
 };

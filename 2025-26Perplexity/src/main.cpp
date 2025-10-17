@@ -5,6 +5,7 @@
 #include "color_sort.hpp"
 #include "consts.h"
 #include "controller_data.hpp"
+#include "gps.hpp"
 #include "lemlib/chassis/chassis.hpp"
 #include "lemlib/chassis/trackingWheel.hpp"
 #include "pros/abstract_motor.hpp"
@@ -32,7 +33,7 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
 bool isRed;
 pros::Optical optical(10);
 ColourDetector colorDetector(optical);
-pros::GPS gps(8, -0.140, -0.229);
+extern pros::GPS gps(8, -0.140, -0.229);
 // Initialize the Scraper
 AirCylinder scraper('h');
 // Make attacher wirj
@@ -49,7 +50,7 @@ pros::Motor outt_3(7, pros::MotorGearset::green);
 std::vector<pros::Motor> test = { outt_1, outt_2, outt_3 };
 mecha_control outtake_ctrl = {
     { { { { 0, -1 }, { 1, -1 }, { 2, -1 } }, Outt_States::TOP },
-      { { { 0, -1 }, { 1, 1 }, { 2, -1 } }, Outt_States::MIDDLE },
+      { { { 0, -1 }, { 1, 0.25 }, { 2, -0.75 } }, Outt_States::MIDDLE },
       { { { 0, 1 }, { 1, 1 }, { 2, -1 } }, Outt_States::BOTTOM },
       { { { 0, -1 }, { 1, -1 }, { 2, 1 } }, Outt_States::BOTTOM_STORE },
       { { { 0, 0 }, { 1, 0 }, { 2, 0 } }, Outt_States::OFF },
@@ -94,9 +95,9 @@ lemlib::ControllerSettings angular_controller(
     0,   // integral gain (kI)
     40,  // derivative gain (kD) 14 27
     3,   // anti windup - 3
-    1,   // small error range, in degrees - 1
+    0.5, // small error range, in degrees - 1
     100, // small error range timeout, in milliseconds - 100
-    3,   // large error range, in degrees - 3
+    1.5, // large error range, in degrees - 3
     500, // large error range timeout, in milliseconds - 500
     0    // maximum acceleration (slew)
 );
@@ -125,18 +126,22 @@ ModularControl displayHandler(chassis,
  * to keep execution time for this mode under a few seconds.                   \
  */
 
-void aut_neg_red() { auton_one_side(-1, 1); }
+void apr() { auton_one_side(-1, 1); }
+void anr() { auton_one_side(-1, -1); }
+void apb() { auton_one_side(1, 1); }
+void anb() { auton_one_side(1, -1); }
+void skills() { auton_one_side(1, -1, true); }
 
 // It looks nice
 rd::Selector selector({
-    { "autons_negative_red", aut_neg_red },
+    { "autons_positive_red", apr },
 
-    { "autons_positive_red", autons_positive_red },
+    { "autons_negative_red", anr },
 
-    { "auton_skills", auton_skills },
-    { "autons_positive_blue", autons_positive_blue },
+    { "auton_skills", skills },
+    { "autons_positive_blue", apb },
 
-    { "autons_negative_blue", autons_negative_blue },
+    { "autons_negative_blue", anb },
 });
 void initialize_macros() {
     macros.reserve(2);
@@ -327,17 +332,18 @@ void handleOuttakeCont() {
 void handleControls() {
     handleOuttakeCont();
     // Toggle funny scrapers
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
         scraper.toggle();
     }
 
     // "Double-Park-Thingy" as I was told
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
         descorer.toggle();
     }
 }
 
 void opcontrol() {
+
     scraper.toggle();
     // UpdateDisplay
     displayHandler.updateDisplay(
@@ -359,7 +365,7 @@ void opcontrol() {
     while (true) {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-            aut_neg_red();
+            skills();
             return;
         }
         displayUpdater(iteration); // Handles controller display

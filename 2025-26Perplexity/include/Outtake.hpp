@@ -23,7 +23,7 @@
 
 struct single_control {
     int motorID;
-    int moveMPL;
+    double moveMPL;
 };
 struct multi_control {
     std::vector<single_control> soloCont;
@@ -64,6 +64,7 @@ class Outtake : public subsystem {
     // Initialize various functions and variables
     void move(int state) { this->state = Outt_States(state); };
     void emergency(int delay, std::vector<single_control> override);
+    std::string log() override;
 
     void run() override;
     inline void suspend() override { task.suspend(); };
