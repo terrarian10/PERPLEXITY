@@ -5,7 +5,6 @@
 #include "color_sort.hpp"
 #include "consts.h"
 #include "controller_data.hpp"
-#include "gps.hpp"
 #include "lemlib/chassis/chassis.hpp"
 #include "lemlib/chassis/trackingWheel.hpp"
 #include "pros/abstract_motor.hpp"

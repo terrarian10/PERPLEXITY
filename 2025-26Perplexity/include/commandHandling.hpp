@@ -4,7 +4,6 @@
 #include "airCylinder.hpp"
 #include "autons.hpp"
 #include "consts.h"
-#include "gps.hpp"
 #include "lemlib/chassis/chassis.hpp"
 #include "lemlib/pose.hpp"
 #include "main.h"

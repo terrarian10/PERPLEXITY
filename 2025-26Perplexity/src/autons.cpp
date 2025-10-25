@@ -1,7 +1,6 @@
 #include "autons.hpp"
 #include "commandHandling.hpp"
 #include "consts.h"
-#include "gps.hpp"
 #include "lemlib/asset.hpp"
 #include "lemlib/pose.hpp"
 #include "logger.hpp"
