@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -39,8 +40,13 @@ void Outtake::loop() {
                 // std::cout << std::endl;
 
                 for (const auto& i : r.soloCont) {
-
-                    this->motors.at(i.motorID).move_voltage(i.moveMPL * 12000);
+                    if (i.motorID >= 0) {
+                        this->motors.at(i.motorID).move_voltage(i.moveMPL *
+                                                                12000);
+                    } else {
+                        this->air.at(std::abs(i.motorID) - 1)
+                            .set_value(i.moveMPL == 1 ? true : false);
+                    }
                 }
             }
         }

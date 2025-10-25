@@ -35,9 +35,9 @@ pros::Optical optical(10);
 ColourDetector colorDetector(optical);
 extern pros::GPS gps(8, -0.140, -0.229);
 // Initialize the Scraper
-AirCylinder scraper('h');
+AirCylinder scraper('h', false);
 // Make attacher wirj
-AirCylinder attacher('g');
+// AirCylinder attacher('g');
 // Doubleparrk
 AirCylinder descorer('a');
 pros::IMU imu(19);
@@ -48,6 +48,8 @@ pros::Motor outt_1(5, pros::MotorGearset::blue);
 pros::Motor outt_2(6, pros::MotorGearset::green);
 pros::Motor outt_3(7, pros::MotorGearset::green);
 std::vector<pros::Motor> test = { outt_1, outt_2, outt_3 };
+AirCylinder scoring_cylinder('h');
+std::vector<AirCylinder> intake_cylinders = { scoring_cylinder };
 mecha_control outtake_ctrl = {
     { { { { 0, -1 }, { 1, -1 }, { 2, -1 } }, Outt_States::TOP },
       { { { 0, -1 }, { 1, 0.25 }, { 2, -0.75 } }, Outt_States::MIDDLE },
@@ -59,7 +61,12 @@ mecha_control outtake_ctrl = {
       { { { 0, 1 }, { 1, 0 }, { 2, 0 } }, Outt_States::UNJAM_NO_RELEASE } },
     "Outtake"
 };
-Outtake outtake(test, colorDetector, outtake_ctrl, Outt_States::OFF, 6000);
+Outtake outtake(test,
+                intake_cylinders,
+                colorDetector,
+                outtake_ctrl,
+                Outt_States::OFF,
+                6000);
 pros::Rotation horizontalEncoder(20);
 
 lemlib::TrackingWheel horizontal(&horizontalEncoder,
@@ -130,7 +137,7 @@ void apr() { auton_one_side(-1, 1); }
 void anr() { auton_one_side(-1, -1); }
 void apb() { auton_one_side(1, 1); }
 void anb() { auton_one_side(1, -1); }
-void skills() { auton_one_side(1, -1, true); }
+void skills() { auton_one_side(-1, 1, true); }
 
 // It looks nice
 rd::Selector selector({
@@ -344,15 +351,15 @@ void handleControls() {
 
 void opcontrol() {
 
-    scraper.toggle();
-    // UpdateDisplay
+    // scraper.toggle();
+    //  UpdateDisplay
     displayHandler.updateDisplay(
         macros[displayHandler.get_active_address() - 1]);
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
-        master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-        autonomous();
-        return;
-    }
+    // if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
+    //     master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+    //     autonomous();
+    //     return;
+    // }
 
     // Set Brake Mode
     pros::motor_brake_mode_e_t driver_preference_brake =
@@ -365,7 +372,7 @@ void opcontrol() {
     while (true) {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-            skills();
+            anb();
             return;
         }
         displayUpdater(iteration); // Handles controller display

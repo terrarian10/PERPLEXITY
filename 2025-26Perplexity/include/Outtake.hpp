@@ -12,6 +12,7 @@
 #pragma once
 
 // Import unnecessary classes
+#include "airCylinder.hpp"
 #include "color_sort.hpp"
 #include "consts.h"
 #include "modularSubsystem.hpp"
@@ -48,11 +49,13 @@ class Outtake : public subsystem {
     // Should probably make it work but single motor 3 times ig
 
     Outtake(std::vector<pros::Motor>& motors,
+            std::vector<AirCylinder>& air,
             ColourDetector colorDetector,
             mecha_control& mechHandler,
             Outt_States state,
             const std::uint32_t RUNNING_VOLTAGE = 12000)
         : motors(motors)
+        , air(air)
         , colorDetector(colorDetector)
         , mechHandler(mechHandler)
         , state(state)
@@ -89,6 +92,7 @@ class Outtake : public subsystem {
     Outt_States state;
     ColourDetector colorDetector;
     std::vector<pros::Motor> motors;
+    std::vector<AirCylinder> air;
     void loop();
     mecha_control& mechHandler;
 };

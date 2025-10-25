@@ -16,5 +16,7 @@
 #include <vector>
 
 class magnificent {
+    std::vector<std::string> convertToWords(std::string line);
     void compiler(std::string path);
+    void compiler_locations(std::string path);
 };
