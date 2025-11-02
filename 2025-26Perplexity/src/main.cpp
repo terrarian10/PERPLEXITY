@@ -15,6 +15,7 @@
 #include "pros/rotation.hpp"
 #include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
+#include <cstddef>
 #include <cstdlib>
 #include <vector>
 
@@ -32,32 +33,26 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
 bool isRed;
 pros::Optical optical(10);
 ColourDetector colorDetector(optical);
-extern pros::GPS gps(8, -0.140, -0.229);
 // Initialize the Scraper
 AirCylinder scraper('h', false);
 // Make attacher wirj
 // AirCylinder attacher('g');
 // Doubleparrk
 AirCylinder descorer('a');
-pros::IMU imu(19);
-pros::Rotation horizOdom();
+// pros::IMU imu(19);
+pros::Rotation horizOdom(16);
 // Literally anything  is better than this method
 // Don't touch it it works
-pros::Motor outt_1(5, pros::MotorGearset::blue);
-pros::Motor outt_2(6, pros::MotorGearset::green);
-pros::Motor outt_3(7, pros::MotorGearset::green);
-std::vector<pros::Motor> test = { outt_1, outt_2, outt_3 };
-AirCylinder scoring_cylinder('h');
-std::vector<AirCylinder> intake_cylinders = { scoring_cylinder };
+pros::Motor outt_1(9, pros::MotorGearset::blue);
+pros::Motor outt_2(6, pros::MotorGearset::blue);
+std::vector<pros::Motor> test = { outt_1, outt_2 };
+// AirCylinder scoring_cylinder('h');
+std::vector<AirCylinder> intake_cylinders = {};
 mecha_control outtake_ctrl = {
-    { { { { 0, -1 }, { 1, -1 }, { 2, -1 } }, Outt_States::TOP },
-      { { { 0, -1 }, { 1, 0.25 }, { 2, -0.75 } }, Outt_States::MIDDLE },
-      { { { 0, 1 }, { 1, 1 }, { 2, -1 } }, Outt_States::BOTTOM },
-      { { { 0, -1 }, { 1, -1 }, { 2, 1 } }, Outt_States::BOTTOM_STORE },
-      { { { 0, 0 }, { 1, 0 }, { 2, 0 } }, Outt_States::OFF },
-      { { { 0, -1 }, { 1, -1 }, { 2, 0 } }, Outt_States::TOP_STORE },
-      { { { 0, 1 }, { 1, -1 }, { 2, -1 } }, Outt_States::UNJAM },
-      { { { 0, 1 }, { 1, 0 }, { 2, 0 } }, Outt_States::UNJAM_NO_RELEASE } },
+    { { { { 0, 1 }, { 1, 1 } }, Outt_States::TOP },
+      { { { 0, -1 }, { 1, 0.25 } }, Outt_States::MIDDLE },
+      { { { 0, 1 }, { 1, 1 } }, Outt_States::BOTTOM },
+      { { { 0, 0 }, { 1, 0 }, { 2, 0 } }, Outt_States::OFF } },
     "Outtake"
 };
 Outtake outtake(test,
@@ -78,7 +73,7 @@ lemlib::OdomSensors sensors(
     nullptr,     // vertical tracking wheel 2
     &horizontal, // horizontal tracking wheel 1
     nullptr,     // horizontal tracking wheel 2
-    &imu         // imu
+    nullptr      //&imu         // imu
 );
 
 // Guess and check final boss
@@ -169,8 +164,8 @@ void initialize() {
     initialize_macros();
     selector.next_auton();
     outtake.initialize();
-    chassis.setPose(
-        gps.get_position_x() * 39.37, gps.get_position_y() * 39.37, 0);
+    // chassis.setPose(
+    //     gps.get_position_x() * 39.37, gps.get_position_y() * 39.37, 0);
 
     //  Initialize chassis and macros
     master.rumble(".");
@@ -300,21 +295,13 @@ void handleEjection() {
 }
 
 void handleOuttakeCont() {
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-        if (outtake.get_state() == Outt_States::BOTTOM_STORE) {
-            outtake.run_at_state(Outt_States::TOP_STORE);
-        } else if (outtake.get_state() == Outt_States::TOP_STORE) {
-            outtake.run_at_state(Outt_States::OFF);
-        } else {
-            outtake.run_at_state(Outt_States::BOTTOM_STORE);
-        }
-    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
         if (outtake.get_state() == Outt_States::BOTTOM) {
             outtake.run_at_state(Outt_States::OFF);
         } else {
             outtake.run_at_state(Outt_States::BOTTOM);
         }
-    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
+    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
         if (outtake.get_state() == Outt_States::TOP) {
             outtake.run_at_state(Outt_States::OFF);
         } else {
@@ -325,12 +312,6 @@ void handleOuttakeCont() {
             outtake.run_at_state(Outt_States::OFF);
         } else {
             outtake.run_at_state(Outt_States::MIDDLE);
-        }
-    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
-        if (outtake.get_state() == Outt_States::UNJAM) {
-            outtake.run_at_state(Outt_States::OFF);
-        } else {
-            outtake.run_at_state(Outt_States::UNJAM);
         }
     }
 }

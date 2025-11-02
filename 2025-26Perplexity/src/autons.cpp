@@ -333,7 +333,7 @@ void auton_one_side(float mx, float my, bool doSkills) {
         chassis,
         poseCFG{ false, 100, 127 });
 
-    autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM_STORE, outtake);
+    // autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM_STORE, outtake);
     autonSchedule.enqueue<move_pose_c>(
         lemlib::Pose{ mx * 40_cm,
                       my * (doSkills ? 60_cm : 60_cm),
@@ -393,11 +393,11 @@ void auton_one_side(float mx, float my, bool doSkills) {
 
     // autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM_STORE, outtake);
     // autonSchedule.enqueue<wait_c>(250);
-    autonSchedule.enqueue<outtake_c>(Outt_States::TOP_STORE, outtake);
-    autonSchedule.enqueue<wait_c>(250);
+    // autonSchedule.enqueue<outtake_c>(Outt_States::TOP_STORE, outtake);
+    // autonSchedule.enqueue<wait_c>(250);
     if ((mx == 1 && my == 1) || (mx == -1 && my == -1)) {
-        autonSchedule.enqueue<outtake_c>(Outt_States::TOP_STORE, outtake);
-        autonSchedule.enqueue<wait_c>(500);
+        // autonSchedule.enqueue<outtake_c>(Outt_States::TOP_STORE, outtake);
+        // autonSchedule.enqueue<wait_c>(500);
     }
     autonSchedule.enqueue<wait_c>(250);
     autonSchedule.enqueue<outtake_c>(Outt_States::MIDDLE, outtake);
@@ -491,8 +491,9 @@ void auton_one_side(float mx, float my, bool doSkills) {
         poseCFG{ .minSpeed = 90 });
 
     for (int g = 0; g <= (doSkills ? 0 : 0); g++) {
-        autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM_STORE,
-                                         outtake); // MATCH LOAD FROM MATCH LOAD
+        // autonSchedule.enqueue<outtake_c>(Outt_States::BOTTOM_STORE,
+        //                                  outtake); // MATCH LOAD FROM MATCH
+        //                                  LOAD
 
         autonSchedule.enqueue<move_pose_c>(
             lemlib::Pose{
@@ -544,8 +545,8 @@ void auton_one_side(float mx, float my, bool doSkills) {
             chassis,
             poseCFG{ .reversed = true, .maxSpeed = 30, .timeout = 250 });
 
-        autonSchedule.enqueue<outtake_c>(Outt_States::UNJAM_NO_RELEASE,
-                                         outtake);
+        // autonSchedule.enqueue<outtake_c>(Outt_States::UNJAM_NO_RELEASE,
+        //                                  outtake);
         autonSchedule.enqueue<move_pose_c>(
             lemlib::Pose{ mx * 90_cm, my * 122_cm, adjustHeading(270, mx, my) },
             chassis,
