@@ -49,10 +49,10 @@ std::vector<pros::Motor> test = { outt_1, outt_2 };
 // AirCylinder scoring_cylinder('h');
 std::vector<AirCylinder> intake_cylinders = {};
 mecha_control outtake_ctrl = {
-    { { { { 0, 1 }, { 1, 1 } }, Outt_States::TOP },
+    { { { { 0, -1 }, { 1, 1 } }, Outt_States::TOP },
       { { { 0, -1 }, { 1, 0.25 } }, Outt_States::MIDDLE },
       { { { 0, 1 }, { 1, 1 } }, Outt_States::BOTTOM },
-      { { { 0, 0 }, { 1, 0 }, { 2, 0 } }, Outt_States::OFF } },
+      { { { 0, 0 }, { 1, 0 } }, Outt_States::OFF } },
     "Outtake"
 };
 Outtake outtake(test,
