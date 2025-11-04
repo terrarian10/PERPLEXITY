@@ -1,6 +1,6 @@
 #pragma once
 
-enum Outt_States { OFF = 0, TOP = 1, BOTTOM = 2, MIDDLE = 3 };
+enum Outt_States { OFF = 0, TOP = 1, BOTTOM = 2, MIDDLE = 3, HOARD = 4 };
 
 struct poseCFG {
     bool reversed = false;

@@ -20,8 +20,8 @@
 #include <vector>
 
 // Chassis constructor
-pros::MotorGroup left_motors({ -4, -9, 3 }, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({ -2, 13, 11 }, pros::MotorGearset::blue);
+pros::MotorGroup left_motors({ -10, -9, 8 }, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({ -1, 2, 3 }, pros::MotorGearset::blue);
 // Piggyback off of purdues hard work
 lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               &right_motors, // right motor group
@@ -31,28 +31,36 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               2    // horizontal drift is 2 (for now)
 );
 bool isRed;
-pros::Optical optical(10);
+pros::Optical optical(30);
 ColourDetector colorDetector(optical);
 // Initialize the Scraper
 AirCylinder scraper('h', false);
+AirCylinder middle_scorer('a', false);
+
 // Make attacher wirj
 // AirCylinder attacher('g');
 // Doubleparrk
-AirCylinder descorer('a');
-// pros::IMU imu(19);
-pros::Rotation horizOdom(16);
+AirCylinder descorer_r('b');
+AirCylinder descorer_l('c');
+
+pros::IMU imu(11);
+pros::Rotation horizOdom(7);
+pros::Rotation horizOdom2(4);
+pros::Rotation vertOdom(11);
+
 // Literally anything  is better than this method
 // Don't touch it it works
-pros::Motor outt_1(9, pros::MotorGearset::blue);
-pros::Motor outt_2(6, pros::MotorGearset::blue);
+pros::Motor outt_1(20, pros::MotorGearset::blue);
+pros::Motor outt_2(5, pros::MotorGearset::blue);
 std::vector<pros::Motor> test = { outt_1, outt_2 };
 // AirCylinder scoring_cylinder('h');
-std::vector<AirCylinder> intake_cylinders = {};
+std::vector<AirCylinder> intake_cylinders = { middle_scorer };
 mecha_control outtake_ctrl = {
-    { { { { 0, -1 }, { 1, 1 } }, Outt_States::TOP },
-      { { { 0, -1 }, { 1, 0.25 } }, Outt_States::MIDDLE },
-      { { { 0, 1 }, { 1, 1 } }, Outt_States::BOTTOM },
-      { { { 0, 0 }, { 1, 0 } }, Outt_States::OFF } },
+    { { { { 0, 1 }, { 1, 1 }, { -1, 1 } }, Outt_States::TOP },
+      { { { 0, 1 }, { 1, -1 }, { -1, -1 } }, Outt_States::HOARD },
+      { { { 0, -1 }, { 1, 0 }, { -1, -1 } }, Outt_States::BOTTOM },
+      { { { 0, 1 }, { 1, 1 }, { -1, 0 } }, Outt_States::MIDDLE },
+      { { { 0, 0 }, { 1, 0 }, { -1, -1 } }, Outt_States::OFF } },
     "Outtake"
 };
 Outtake outtake(test,
@@ -73,7 +81,7 @@ lemlib::OdomSensors sensors(
     nullptr,     // vertical tracking wheel 2
     &horizontal, // horizontal tracking wheel 1
     nullptr,     // horizontal tracking wheel 2
-    nullptr      //&imu         // imu
+    &imu         // imu
 );
 
 // Guess and check final boss
@@ -131,6 +139,8 @@ void apr() { auton_one_side(-1, 1); }
 void anr() { auton_one_side(-1, -1); }
 void apb() { auton_one_side(1, 1); }
 void anb() { auton_one_side(1, -1); }
+void pid_test() { testing_pid(); }
+
 void skills() { auton_one_side(-1, 1, true); }
 
 // It looks nice
@@ -295,23 +305,31 @@ void handleEjection() {
 }
 
 void handleOuttakeCont() {
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
         if (outtake.get_state() == Outt_States::BOTTOM) {
             outtake.run_at_state(Outt_States::OFF);
         } else {
             outtake.run_at_state(Outt_States::BOTTOM);
         }
-    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
         if (outtake.get_state() == Outt_States::TOP) {
             outtake.run_at_state(Outt_States::OFF);
         } else {
             outtake.run_at_state(Outt_States::TOP);
+            outtake.emergency(125, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
         }
     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
         if (outtake.get_state() == Outt_States::MIDDLE) {
             outtake.run_at_state(Outt_States::OFF);
         } else {
             outtake.run_at_state(Outt_States::MIDDLE);
+            outtake.emergency(125, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
+        }
+    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+        if (outtake.get_state() == Outt_States::HOARD) {
+            outtake.run_at_state(Outt_States::OFF);
+        } else {
+            outtake.run_at_state(Outt_States::HOARD);
         }
     }
 }
@@ -325,7 +343,7 @@ void handleControls() {
 
     // "Double-Park-Thingy" as I was told
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-        descorer.toggle();
+        descorer_l.toggle();
     }
 }
 

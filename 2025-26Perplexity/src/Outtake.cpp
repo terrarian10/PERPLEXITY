@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -44,8 +45,15 @@ void Outtake::loop() {
                         this->motors.at(i.motorID).move_voltage(i.moveMPL *
                                                                 12000);
                     } else {
-                        this->air.at(std::abs(i.motorID) - 1)
-                            .set_value(i.moveMPL == 1 ? true : false);
+                        if (i.moveMPL != -1 && air.at(std::abs(i.motorID) - 1)
+                                                       .get_value() != i.moveMPL
+                                ? true
+                                : false) {
+                            this->air.at(std::abs(i.motorID) - 1)
+                                .set_value(i.moveMPL == 1 ? true : false);
+                            std::cout << "UPDATING PNEU" << std::endl;
+                        }
+                        std::cout << "Try update pneu" << std::endl;
                     }
                 }
             }
@@ -96,8 +104,20 @@ void Outtake::loop() {
 
 void Outtake::emergency(int delay, std::vector<single_control> override) {
     task.suspend();
-    for (const auto& r : override) {
-        this->motors.at(r.motorID).move_velocity(r.moveMPL * 12000);
+    for (const auto& i : override) {
+        if (i.motorID >= 0) {
+            this->motors.at(i.motorID).move_voltage(i.moveMPL * 12000);
+        } else {
+            if (i.moveMPL != -1 &&
+                        air.at(std::abs(i.motorID) - 1).get_value() != i.moveMPL
+                    ? true
+                    : false) {
+                this->air.at(std::abs(i.motorID) - 1)
+                    .set_value(i.moveMPL == 1 ? true : false);
+                std::cout << "UPDATING PNEU" << std::endl;
+            }
+            std::cout << "Try update pneu" << std::endl;
+        }
     }
 
     pros::delay(delay); // TODO:: ACCOUNT FOR MOTOR TORQUE
