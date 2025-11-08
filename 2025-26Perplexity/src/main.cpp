@@ -79,11 +79,11 @@ lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_275, 0);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
-    nullptr,     // vertical tracking wheel 1, set to nullptr
-    nullptr,     // vertical tracking wheel 2
-    &horizontal, // horizontal tracking wheel 1
-    nullptr,     // horizontal tracking wheel 2
-    &imu         // imu
+    &vertical,    // vertical tracking wheel 1, set to nullptr
+    nullptr,      // vertical tracking wheel 2
+    &horizontal,  // horizontal tracking wheel 1
+    &horizontal2, // horizontal tracking wheel 2
+    &imu          // imu
 );
 
 // Guess and check final boss
