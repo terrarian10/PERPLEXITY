@@ -25,7 +25,7 @@
 //                               400, // drivetrain rpm is 400
 //                               2    // horizontal drift is 2
 // );
-
+// pros::Motor intake(12);
 // // Initialize odomerty sensors, in this case only an IMU
 // lemlib::OdomSensors sensors(
 //     nullptr, // vertical tracking wheel 1, set to nullptr
@@ -36,7 +36,7 @@
 // );
 
 // // Once everything is done, this is just a guess and check, don't touch
-// integral
+
 // // gain really tho' lateral PID controller
 // lemlib::ControllerSettings lateral_controller(
 //     20,  // proportional gain (kP)
@@ -134,7 +134,6 @@
 //     // watch code implode
 
 //     // Run specific auton, uncomment used Auton, NOTICE, this is the MAIN
-//     file,
 //     // not the AUTON file, once you get to this point, I can teach you how to
 //     // integrate multiple files together
 //     // autons_positive_red();
@@ -173,10 +172,15 @@
 //     pros::motor_brake_mode_e_t driver_preference_brake =
 //         pros::E_MOTOR_BRAKE_COAST;
 //     pchassis.setBrakeMode(driver_preference_brake);
-
+//     for (int i = 0; i < 10; i++) {}
 //     // Iteration counter if you want to do timing stuff
 //     int iteration = 0;
 //     while (true) {
+//         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+//             intake.move_velocity(127);
+//         } else {
+//             intake.move_velocity(0);
+//         }
 
 //         //  Get how far the joysticks are moved
 //         int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
@@ -186,14 +190,16 @@
 //         // delay a small amount to prevent brain overload and improve timer
 //         // accuracy
 //         pros::delay(10); // Timer calculations and not making the brain into
-//         a
-//                          // fusion reactior
+//         // fusion reactior
 
 //         iteration++;
 //     }
 // }
-
+// lemlib::Pose goal{ 0, 0, 90 };
 // void autons() {
 //     pchassis.setPose(lemlib::Pose{ -64, 17, 90 });
-//     pchassis.moveToPose(-20, 22, 90, 5000);
+//     // DO FIRST
+//     pchassis.moveToPose(10, 22, 20, 5000);
+//     // DO SECOND
+//     pchassis.moveToPose(10, 22, 90, 5000);
 // }

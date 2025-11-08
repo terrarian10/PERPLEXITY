@@ -1,5 +1,5 @@
 #include "Outtake.hpp"
-#include "consts.h"
+#include "consts.hpp"
 #include "pros/rtos.h"
 #include "pros/rtos.hpp"
 #include <cassert>
@@ -51,9 +51,7 @@ void Outtake::loop() {
                                 : false) {
                             this->air.at(std::abs(i.motorID) - 1)
                                 .set_value(i.moveMPL == 1 ? true : false);
-                            std::cout << "UPDATING PNEU" << std::endl;
                         }
-                        std::cout << "Try update pneu" << std::endl;
                     }
                 }
             }

@@ -28,7 +28,6 @@
 #include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
 #include "pros/motor_group.hpp"
-#include "virtualController.hpp"
 
 #ifdef __cplusplus
 /**

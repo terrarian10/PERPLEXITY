@@ -3,7 +3,7 @@
 #include "airCylinder.hpp"
 #include "autons.hpp"
 #include "color_sort.hpp"
-#include "consts.h"
+#include "consts.hpp"
 #include "controller_data.hpp"
 #include "lemlib/chassis/chassis.hpp"
 #include "lemlib/chassis/trackingWheel.hpp"
@@ -15,6 +15,7 @@
 #include "pros/rotation.hpp"
 #include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
+#include "virtualController.hpp"
 #include <cstddef>
 #include <cstdlib>
 #include <vector>
@@ -43,23 +44,23 @@ AirCylinder middle_scorer('a', false);
 AirCylinder descorer_r('b');
 AirCylinder descorer_l('c');
 
-pros::IMU imu(11);
-pros::Rotation horizOdom(7);
+pros::IMU imu(12);
+pros::Rotation horizOdom(-7);
 pros::Rotation horizOdom2(4);
-pros::Rotation vertOdom(11);
+pros::Rotation vertOdom(-12);
 
 // Literally anything  is better than this method
 // Don't touch it it works
-pros::Motor outt_1(20, pros::MotorGearset::blue);
+pros::Motor outt_1(20, pros::MotorGearset::green);
 pros::Motor outt_2(5, pros::MotorGearset::blue);
 std::vector<pros::Motor> test = { outt_1, outt_2 };
 // AirCylinder scoring_cylinder('h');
 std::vector<AirCylinder> intake_cylinders = { middle_scorer };
 mecha_control outtake_ctrl = {
-    { { { { 0, 1 }, { 1, 1 }, { -1, 1 } }, Outt_States::TOP },
+    { { { { 0, 1 }, { 1, 1 }, { -1, 0 } }, Outt_States::TOP },
       { { { 0, 1 }, { 1, -1 }, { -1, -1 } }, Outt_States::HOARD },
       { { { 0, -1 }, { 1, 0 }, { -1, -1 } }, Outt_States::BOTTOM },
-      { { { 0, 1 }, { 1, 1 }, { -1, 0 } }, Outt_States::MIDDLE },
+      { { { 0, 1 }, { 1, 1 }, { -1, 1 } }, Outt_States::MIDDLE },
       { { { 0, 0 }, { 1, 0 }, { -1, -1 } }, Outt_States::OFF } },
     "Outtake"
 };
@@ -69,11 +70,12 @@ Outtake outtake(test,
                 outtake_ctrl,
                 Outt_States::OFF,
                 6000);
-pros::Rotation horizontalEncoder(20);
 
-lemlib::TrackingWheel horizontal(&horizontalEncoder,
-                                 lemlib::Omniwheel::NEW_275,
-                                 -2);
+lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_275, 3.5);
+lemlib::TrackingWheel horizontal2(&horizOdom2,
+                                  lemlib::Omniwheel::NEW_275,
+                                  -3.3);
+lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_275, 0);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
@@ -316,14 +318,14 @@ void handleOuttakeCont() {
             outtake.run_at_state(Outt_States::OFF);
         } else {
             outtake.run_at_state(Outt_States::TOP);
-            outtake.emergency(125, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
+            outtake.emergency(60, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
         }
     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
         if (outtake.get_state() == Outt_States::MIDDLE) {
             outtake.run_at_state(Outt_States::OFF);
         } else {
             outtake.run_at_state(Outt_States::MIDDLE);
-            outtake.emergency(125, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
+            outtake.emergency(60, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
         }
     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
         if (outtake.get_state() == Outt_States::HOARD) {

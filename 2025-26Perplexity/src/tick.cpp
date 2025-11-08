@@ -1,7 +1,10 @@
+#include "tick.hpp"
 #include "main.h"
 
-enum botState {
-
-};
-
-void tick() {}
+void ticker::tick() {
+    switch (bot_state) {
+        case DISABLED: break;
+        case OPCTRL: break;
+        case AUTONCTRL: break;
+    }
+}
