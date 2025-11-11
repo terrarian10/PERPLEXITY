@@ -17,7 +17,6 @@
 [[nodiscard]] inline const constexpr long double  operator""_pi  (unsigned long long input)    { return input * 3.14159; }
 
 [[nodiscard]] inline const constexpr long double  operator""_deg (long double deg)             { return operator""_pi(deg) / 180.0; }
-// [[nodiscard]] inline const constexpr long long operator""_deg (unsigned long long deg)      { return operator""_pi(deg) / 180.0; }
 [[nodiscard]] inline const constexpr long double  operator""_r   (long double r)               { return r * 180 / 1.0_pi; }
 [[nodiscard]] inline const constexpr long double  operator""_r   (unsigned long long r)        { return r * 180 / 1.0_pi; }
 [[nodiscard]] inline const constexpr long double  operator""_rt2 (long double r)               { return r * std::sqrt(2); }

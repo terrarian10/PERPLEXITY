@@ -26,7 +26,7 @@ pros::MotorGroup right_motors({ -1, 2, 3 }, pros::MotorGearset::blue);
 // Piggyback off of purdues hard work
 lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               &right_motors, // right motor group
-                              10.75,         // 10 inch track width
+                              13.82,         // 10 inch track width // 13.82?
                               lemlib::Omniwheel::NEW_325,
                               360, // drivetrain rpm is 360
                               2    // horizontal drift is 2 (for now)
@@ -41,13 +41,13 @@ AirCylinder middle_scorer('a', false);
 // Make attacher wirj
 // AirCylinder attacher('g');
 // Doubleparrk
-AirCylinder descorer_r('b');
-AirCylinder descorer_l('c');
+AirCylinder descorer_r('c');
+AirCylinder descorer_l('b');
 
 pros::IMU imu(12);
 pros::Rotation horizOdom(-7);
 pros::Rotation horizOdom2(4);
-pros::Rotation vertOdom(-12);
+pros::Rotation vertOdom(-11);
 
 // Literally anything  is better than this method
 // Don't touch it it works
@@ -60,7 +60,7 @@ mecha_control outtake_ctrl = {
     { { { { 0, 1 }, { 1, 1 }, { -1, 0 } }, Outt_States::TOP },
       { { { 0, 1 }, { 1, -1 }, { -1, -1 } }, Outt_States::HOARD },
       { { { 0, -1 }, { 1, 0 }, { -1, -1 } }, Outt_States::BOTTOM },
-      { { { 0, 1 }, { 1, 1 }, { -1, 1 } }, Outt_States::MIDDLE },
+      { { { 0, 1 }, { 1, 0.75 }, { -1, 1 } }, Outt_States::MIDDLE },
       { { { 0, 0 }, { 1, 0 }, { -1, -1 } }, Outt_States::OFF } },
     "Outtake"
 };
@@ -71,47 +71,45 @@ Outtake outtake(test,
                 Outt_States::OFF,
                 6000);
 
-lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_275, 3.5);
-lemlib::TrackingWheel horizontal2(&horizOdom2,
-                                  lemlib::Omniwheel::NEW_275,
-                                  -3.3);
-lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_275, 0);
+lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2, -3.5);
+lemlib::TrackingWheel horizontal2(&horizOdom2, lemlib::Omniwheel::NEW_2, 3.3);
+lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, 0.4);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
-    &vertical,    // vertical tracking wheel 1, set to nullptr
-    nullptr,      // vertical tracking wheel 2
-    &horizontal,  // horizontal tracking wheel 1
-    &horizontal2, // horizontal tracking wheel 2
-    &imu          // imu
+    nullptr, //&vertical,   // vertical tracking wheel 1, set to nullptr
+    nullptr, // vertical tracking wheel 2
+    nullptr, //&horizontal, // horizontal tracking wheel 1
+    nullptr, //&horizontal2, // horizontal tracking wheel 2
+    &imu     // imu
 );
 
 // Guess and check final boss
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(
-    75,  // proportional gain (kP) - 55 60 65 70 75 80
+    15,  // proportional gain (kP) - 55 60 65 70 75 80
     0,   // integral gain (kI)
-    34,  // derivative gain (kD) -- 24 32 32 33 34 36
+    9,   // derivative gain (kD) -- 24 32 32 33 34 36
     3,   // anti windup3
-    0.5, // small error range, in inches1
+    1,   // small error range, in inches1
     100, // small error range timeout, in milliseconds100
-    1,   // large error range, in inches3
+    3,   // large error range, in inches3
     500, // large error range timeout, in milliseconds500
-    20   // maximum acceleration (slew)20
+    0    // maximum acceleration (slew)0
 );
 
-// angular PID controller
 lemlib::ControllerSettings angular_controller(
-    6,   // proportional gain (kP) 5 6
-    0,   // integral gain (kI)
-    40,  // derivative gain (kD) 14 27
-    3,   // anti windup - 3
-    0.5, // small error range, in degrees - 1
-    100, // small error range timeout, in milliseconds - 100
-    1.5, // large error range, in degrees - 3
-    500, // large error range timeout, in milliseconds - 500
-    0    // maximum acceleration (slew)
+    4,   // kP – start here again or even 3
+    0,   // kI – keep off for now
+    25,  // kD – moderate, not 400
+    3,   // anti windup (does nothing until you use I, but fine)
+    1,   // small error range (deg)
+    150, // small error timeout (ms)
+    3,   // large error range (deg)
+    500, // large error timeout (ms)
+    40   // slew – limit acceleration so it doesn't slam
 );
+
 // create the chassis
 lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                         lateral_controller, // lateral PID settings
@@ -318,14 +316,14 @@ void handleOuttakeCont() {
             outtake.run_at_state(Outt_States::OFF);
         } else {
             outtake.run_at_state(Outt_States::TOP);
-            outtake.emergency(60, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
+            outtake.emergency(120, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
         }
     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
         if (outtake.get_state() == Outt_States::MIDDLE) {
             outtake.run_at_state(Outt_States::OFF);
         } else {
             outtake.run_at_state(Outt_States::MIDDLE);
-            outtake.emergency(60, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
+            outtake.emergency(120, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
         }
     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
         if (outtake.get_state() == Outt_States::HOARD) {

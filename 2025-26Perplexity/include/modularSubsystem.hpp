@@ -1,7 +1,7 @@
 /**
- * @file outtake.hpp
+ * @file modularSubsystem.hpp
  * @author Gabriel Hein
- * @brief Outtake handler
+ * @brief Subsystem handler
  * @version 0.1
  * @date 2025-07-13
  *

@@ -1,5 +1,5 @@
 /**
- * @file outtake.hpp
+ * @file controller_data.hpp
  * @author Gabriel Hein
  * @brief Outtake handler
  * @version 0.1

@@ -35,11 +35,7 @@ void Outtake::loop() {
     while (true) {
 
         for (auto& r : mechHandler.motorHandling) {
-
             if (state == r.id) {
-                // std::cout << r.id << "\n";
-                // std::cout << std::endl;
-
                 for (const auto& i : r.soloCont) {
                     if (i.motorID >= 0) {
                         this->motors.at(i.motorID).move_voltage(i.moveMPL *
@@ -57,45 +53,6 @@ void Outtake::loop() {
             }
         }
         pros::delay(20);
-
-        // switch (state) {
-        //     // Guess and check final boss phase 2
-        //     //     case State::TOP:
-        //     //         // Wants ~pointers~ for some reason
-        //     //         this->motors.at(0).mo->outtake_1.move_voltage(-1 *
-        //     // RUNNING_VOLTAGE);
-        //     //         this->outtake_2.move_voltage(-1 *
-        //     RUNNING_VOLTAGE);
-        //     //         this->outtake_3.move_voltage(-1 *
-        //     RUNNING_VOLTAGE);
-        //     //         break;
-        //     //     case State::MIDDLE:
-        //     //         this->outtake_1.move_voltage(-1 *
-        //     RUNNING_VOLTAGE);
-        //     //         this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
-        //     //         this->outtake_3.move_voltage(-1 *
-        //     RUNNING_VOLTAGE);
-        //     //         break;
-        //     //     case State::HOARD:
-        //     //         this->outtake_1.move_voltage(-1 *
-        //     RUNNING_VOLTAGE);
-        //     //         this->outtake_2.move_voltage(-1 *
-        //     RUNNING_VOLTAGE);
-        //     //         this->outtake_3.move_voltage(1 * RUNNING_VOLTAGE);
-        //     //         break;
-        //     //     case State::BOTTOM:
-        //     //         this->outtake_1.move_voltage(1 * RUNNING_VOLTAGE);
-        //     //         this->outtake_2.move_voltage(1 * RUNNING_VOLTAGE);
-        //     //         this->outtake_3.move_voltage(-1 *
-        //     RUNNING_VOLTAGE);
-        //     //         break;
-        //     //     case State::OFF:
-
-        //     //         this->outtake_1.move_voltage(0);
-        //     //         this->outtake_2.move_voltage(0);
-        //     //         this->outtake_3.move_voltage(0);
-        //     //         break;
-        //     // }
     }
     pros::delay(20);
 };

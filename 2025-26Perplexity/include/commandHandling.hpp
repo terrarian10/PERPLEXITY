@@ -141,6 +141,9 @@ class move_pose_c : public command {
 
                                });
             started = true;
+            std::cout << "GOAL X: " << pose.x << " Y: " << pose.y
+                      << "ROT:" << pose.theta << "\n";
+
             return false;
         }
         return !chassis.isInMotion();
@@ -236,10 +239,11 @@ class Scheduler {
             schedule.pop_front();
             // gpsRefinerTask(gps);
             std::cout << "Removed. At Size: " << schedule.size()
-                      << " AT: " << chassis.getPose().x * 2.54 << " "
+                      << " RESULT AT: " << chassis.getPose().x * 2.54 << " "
                       << chassis.getPose().y * 2.54 << " "
                       << chassis.getPose().theta << "Degrees" << std::endl
                       << outtake.log();
+            tick();
         }
         return !schedule.empty();
     };
@@ -278,17 +282,4 @@ class Scheduler {
 
   private:
     std::deque<std::unique_ptr<command>> schedule;
-};
-
-struct cmd {
-    class command;
-};
-
-cmd hello(wait_c);
-
-class interpreter {
-  public:
-    void interpret();
-
-  private:
 };

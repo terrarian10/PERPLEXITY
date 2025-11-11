@@ -6,10 +6,10 @@ enum Outt_States { OFF = 0, TOP = 1, BOTTOM = 2, MIDDLE = 3, HOARD = 4 };
 
 struct poseCFG {
     bool reversed = false;
-    int minSpeed = 40;
+    int minSpeed = 0;
     int maxSpeed = 120;
-    int timeout = 5000;
-    float earlyExitRange = 0.2;
+    int timeout = 6000;
+    float earlyExitRange = 1;
 };
 const std::list<pros::controller_digital_e_t> digital_buttons = {
     pros::E_CONTROLLER_DIGITAL_A,    pros::E_CONTROLLER_DIGITAL_L1,

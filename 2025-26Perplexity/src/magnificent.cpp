@@ -1,14 +1,7 @@
 
 #include "magnificent.hpp"
-#include "Outtake.hpp"
-#include "airCylinder.hpp"
-#include "autons.hpp"
-#include "lemlib/chassis/chassis.hpp"
-#include "main.h"
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
-#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <sstream>

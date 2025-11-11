@@ -45,7 +45,7 @@ extern pros::Controller master;
 extern lemlib::Chassis chassis;
 extern Outtake outtake;
 extern AirCylinder scraper;
-extern AirCylinder attacher;
+extern AirCylinder middle_scorer;
 extern AirCylinder descorer;
 
 #endif
