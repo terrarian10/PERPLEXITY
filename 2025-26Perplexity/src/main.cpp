@@ -41,13 +41,13 @@ AirCylinder middle_scorer('a', false);
 // Make attacher wirj
 // AirCylinder attacher('g');
 // Doubleparrk
-AirCylinder descorer_r('c');
+AirCylinder descorer_front('c');
 AirCylinder descorer_l('b');
 
 pros::IMU imu(12);
-pros::Rotation horizOdom(-7);
-pros::Rotation horizOdom2(4);
-pros::Rotation vertOdom(-11);
+// pros::Rotation horizOdom(7);
+// pros::Rotation horizOdom2(4);
+// pros::Rotation vertOdom(-11);
 
 // Literally anything  is better than this method
 // Don't touch it it works
@@ -58,9 +58,9 @@ std::vector<pros::Motor> test = { outt_1, outt_2 };
 std::vector<AirCylinder> intake_cylinders = { middle_scorer };
 mecha_control outtake_ctrl = {
     { { { { 0, 1 }, { 1, 1 }, { -1, 0 } }, Outt_States::TOP },
-      { { { 0, 1 }, { 1, -1 }, { -1, -1 } }, Outt_States::HOARD },
+      { { { 0, 1 }, { 1, 0 }, { -1, -1 } }, Outt_States::HOARD },
       { { { 0, -1 }, { 1, 0 }, { -1, -1 } }, Outt_States::BOTTOM },
-      { { { 0, 1 }, { 1, 0.75 }, { -1, 1 } }, Outt_States::MIDDLE },
+      { { { 0, 1 }, { 1, 1 }, { -1, 1 } }, Outt_States::MIDDLE },
       { { { 0, 0 }, { 1, 0 }, { -1, -1 } }, Outt_States::OFF } },
     "Outtake"
 };
@@ -71,9 +71,10 @@ Outtake outtake(test,
                 Outt_States::OFF,
                 6000);
 
-lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2, -3.5);
-lemlib::TrackingWheel horizontal2(&horizOdom2, lemlib::Omniwheel::NEW_2, 3.3);
-lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, 0.4);
+// lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2,
+// -3.83); lemlib::TrackingWheel horizontal2(&horizOdom2,
+// lemlib::Omniwheel::NEW_2, 3.3); lemlib::TrackingWheel vertical(&vertOdom,
+// lemlib::Omniwheel::NEW_2, 2.5);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
@@ -92,9 +93,9 @@ lemlib::ControllerSettings lateral_controller(
     9,   // derivative gain (kD) -- 24 32 32 33 34 36
     3,   // anti windup3
     1,   // small error range, in inches1
-    100, // small error range timeout, in milliseconds100
+    75,  // small error range timeout, in milliseconds100
     3,   // large error range, in inches3
-    500, // large error range timeout, in milliseconds500
+    300, // large error range timeout, in milliseconds500
     0    // maximum acceleration (slew)0
 );
 
@@ -104,9 +105,9 @@ lemlib::ControllerSettings angular_controller(
     25,  // kD – moderate, not 400
     3,   // anti windup (does nothing until you use I, but fine)
     1,   // small error range (deg)
-    150, // small error timeout (ms)
+    100, // small error timeout (ms)
     3,   // large error range (deg)
-    500, // large error timeout (ms)
+    300, // large error timeout (ms)
     40   // slew – limit acceleration so it doesn't slam
 );
 
@@ -173,7 +174,9 @@ void initialize() {
     outt_1.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     initialize_macros();
     selector.next_auton();
+    outt_2.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     outtake.initialize();
+
     // chassis.setPose(
     //     gps.get_position_x() * 39.37, gps.get_position_y() * 39.37, 0);
 
@@ -314,9 +317,12 @@ void handleOuttakeCont() {
     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
         if (outtake.get_state() == Outt_States::TOP) {
             outtake.run_at_state(Outt_States::OFF);
+            middle_scorer.retract();
+            descorer_front.extend();
         } else {
             outtake.run_at_state(Outt_States::TOP);
             outtake.emergency(120, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
+            descorer_front.retract();
         }
     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
         if (outtake.get_state() == Outt_States::MIDDLE) {
@@ -332,18 +338,28 @@ void handleOuttakeCont() {
             outtake.run_at_state(Outt_States::HOARD);
         }
     }
+
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+        outtake.emergency(50, { { 0, 1 }, { 1, 1 }, { -1, -1 } });
+    }
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+        outtake.emergency(150, { { 0, -1 }, { 1, -1 }, { -1, -1 } });
+    }
 }
 
 void handleControls() {
     handleOuttakeCont();
     // Toggle funny scrapers
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
         scraper.toggle();
     }
 
     // "Double-Park-Thingy" as I was told
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
         descorer_l.toggle();
+    }
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+        descorer_front.toggle();
     }
 }
 
@@ -368,8 +384,7 @@ void opcontrol() {
     int iteration = 0;
     // watch afshin implode the bot
     while (true) {
-        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
-            master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
             anb();
             return;
         }

@@ -84,6 +84,7 @@ void Outtake::emergency(int delay, std::vector<single_control> override) {
 
 void Outtake::initialize() {
     move(Outt_States::OFF);
+
     task = pros::Task([this]() -> void { this->loop(); },
                       TASK_PRIORITY_MIN,
                       4096,

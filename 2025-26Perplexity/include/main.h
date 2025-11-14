@@ -46,7 +46,7 @@ extern lemlib::Chassis chassis;
 extern Outtake outtake;
 extern AirCylinder scraper;
 extern AirCylinder middle_scorer;
-extern AirCylinder descorer;
+extern AirCylinder descorer_l;
 
 #endif
 
