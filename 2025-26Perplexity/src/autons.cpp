@@ -73,7 +73,7 @@ void auton_one_side(float mx, float my, bool doSkills) {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
     chassis.setPose(mx * 124_cm, my * 52_cm, adjustHeading(90, mx, my));
     autonSchedule.enqueue<setPose_c>(
-        lemlib::Pose{ mx * 124_cm, my * 52_cm, adjustHeading(90, mx, my) });
+        lemlib::Pose{ mx * 124_cm, my * 53_cm, adjustHeading(90, mx, my) });
 
     // gps_initialize(mx,
     //                my,
@@ -92,14 +92,14 @@ void auton_one_side(float mx, float my, bool doSkills) {
     //     chassis,
     //     poseCFG{ false, 100, 127 });
     autonSchedule.enqueue<move_pose_c>(
-        lemlib::Pose{ mx * 90_cm, my * (59_cm), adjustHeading(90, mx, my) },
+        lemlib::Pose{ mx * 90_cm, my * (60_cm), adjustHeading(90, mx, my) },
         chassis,
         poseCFG{ false, 80, 127 });
     autonSchedule.enqueue<outtake_c>(Outt_States::HOARD, outtake);
     autonSchedule.enqueue<move_pose_c>(
-        lemlib::Pose{ mx * 40_cm, my * (59_cm), adjustHeading(90, mx, my) },
+        lemlib::Pose{ mx * 40_cm, my * (62_cm), adjustHeading(90, mx, my) },
         chassis,
-        poseCFG{ false, 60, 60 });
+        poseCFG{ false, 70, 75 });
     autonSchedule.enqueue<move_pose_c>(
         lemlib::Pose{ mx * 50_cm, my * 59_cm, adjustHeading(315, mx, my) },
         chassis,
@@ -135,7 +135,6 @@ void auton_one_side(float mx, float my, bool doSkills) {
                  .maxSpeed = 40,
                  .timeout = 1500 });
 
-    autonSchedule.enqueue<outtake_c>(Outt_States::OFF, outtake);
     autonSchedule.enqueue<togglePneu_c>(descorer_l);
 
     autonSchedule.enqueue<togglePneu_c>(middle_scorer);
@@ -159,6 +158,8 @@ void auton_one_side(float mx, float my, bool doSkills) {
         my * 116_cm,
         chassis,
         poseCFG{ .reversed = false, .minSpeed = 127, .earlyExitRange = 3 });
+    autonSchedule.enqueue<outtake_c>(Outt_States::OFF, outtake);
+
     autonSchedule.enqueue<togglePneu_c>(scraper);
 
     autonSchedule.enqueue<move_pose_c>(
@@ -166,7 +167,7 @@ void auton_one_side(float mx, float my, bool doSkills) {
         chassis,
         poseCFG{ .reversed = false, .minSpeed = 80 });
     autonSchedule.enqueue<move_pose_c>(
-        lemlib::Pose{ mx * 180_cm, my * 120_cm, adjustHeading(270, mx, my) },
+        lemlib::Pose{ mx * 170_cm, my * 120_cm, adjustHeading(270, mx, my) },
         chassis,
         poseCFG{ .reversed = false,
                  .minSpeed = 90,
@@ -176,66 +177,68 @@ void auton_one_side(float mx, float my, bool doSkills) {
         lemlib::Pose{ mx * 0_cm, my * 120_cm, adjustHeading(270, mx, my) },
         chassis,
         poseCFG{
-            .reversed = true, .minSpeed = 30, .maxSpeed = 50, .timeout = 50 });
+            .reversed = true, .minSpeed = 40, .maxSpeed = 50, .timeout = 75 });
 
     autonSchedule.enqueue<outtake_c>(Outt_States::HOARD, outtake);
-    autonSchedule.enqueue<move_pose_c>(
-        lemlib::Pose{ mx * 20000_cm, my * 120_cm, adjustHeading(270, mx, my) },
-        chassis,
-        poseCFG{ .reversed = false,
-                 .minSpeed = 30,
-                 .maxSpeed = 40,
-                 .timeout = 1500 }); // autonSchedule.enqueue<setPose_c>(
+    // autonSchedule.enqueue<move_pose_c>(
+    //     lemlib::Pose{ mx * 20000_cm, my * 120_cm, adjustHeading(270, mx, my)
+    //     }, chassis, poseCFG{ .reversed = false,
+    //              .minSpeed = 30,
+    //              .maxSpeed = 40,
+    //              .timeout = 500 });
+    autonSchedule.enqueue<wait_c>(1500);
+    // autonSchedule.enqueue<setPose_c>(
     //     lemlib::Pose{ mx * float(170_cm), my * float(118_cm), 9999 });
     autonSchedule.enqueue<move_pose_c>(
         lemlib::Pose{ mx * 98_cm, my * 118_cm, adjustHeading(270, mx, my) },
         chassis,
         poseCFG{ .reversed = true, .minSpeed = 80 });
     autonSchedule.enqueue<move_pose_c>(
-        lemlib::Pose{ mx * 87_cm, my * 118_cm, adjustHeading(270, mx, my) },
+        lemlib::Pose{ mx * 71_cm, my * 118_cm, adjustHeading(270, mx, my) },
         chassis,
-        poseCFG{ .reversed = true, .maxSpeed = 80, .timeout = 300 });
+        poseCFG{ .reversed = true, .maxSpeed = 90, .timeout = 900 });
 
     autonSchedule.enqueue<outtake_c>(Outt_States::TOP, outtake);
     autonSchedule.enqueue<togglePneu_c>(scraper);
-    // autonSchedule.enqueue<wait_c>(2500);
     autonSchedule.enqueue<move_pose_c>(
-        lemlib::Pose{ mx * 40_cm, my * 118_cm, adjustHeading(270, mx, my) },
+        lemlib::Pose{ mx * 2000_cm, my * 118_cm, adjustHeading(270, mx, my) },
         chassis,
-        poseCFG{ .reversed = true,
-                 .minSpeed = 30,
-                 .maxSpeed = 30,
-                 .timeout = 2500 });
+        poseCFG{
+            .reversed = false, .minSpeed = 20, .maxSpeed = 20, .timeout = 50 });
+    autonSchedule.enqueue<wait_c>(2250);
+
     autonSchedule.enqueue<outtake_c>(Outt_States::OFF, outtake);
     autonSchedule.enqueue<togglePneu_c>(descorer_l);
 
     autonSchedule.enqueue<move_pose_c>(
-        lemlib::Pose{ mx * 130_cm, my * 118_cm, adjustHeading(270, mx, my) },
+        lemlib::Pose{ mx * 120_cm, my * 118_cm, adjustHeading(270, mx, my) },
         chassis,
         poseCFG{ .reversed = false,
                  .minSpeed = 110,
                  .maxSpeed = 127,
                  .timeout = 600,
                  .earlyExitRange = 3 });
-    autonSchedule.enqueue<setPose_c>(
-        lemlib::Pose{ mx * 130_cm, my * 120_cm, adjustHeading(270, mx, my) });
-
+    // autonSchedule.enqueue<turn_heading_c>(adjustHeading(220, mx, my),
+    // chassis);
+    //  autonSchedule.enqueue<setPose_c>(
+    //      lemlib::Pose{ mx * 130_cm, my * 120_cm, adjustHeading(270, mx, my)
+    //      });
     autonSchedule.enqueue<move_pose_c>(
-        lemlib::Pose{ mx * 100_cm, my * 142_cm, adjustHeading(270, mx, my) },
+        lemlib::Pose{ mx * 100_cm, my * 144_cm, adjustHeading(270, mx, my) },
         chassis,
         poseCFG{ .reversed = true,
                  .minSpeed = 100,
                  .maxSpeed = 127,
                  .timeout = 1500 });
-    autonSchedule.enqueue<turn_heading_c>(adjustHeading(280, mx, my), chassis);
+
     autonSchedule.enqueue<brake_c>(chassis, pros::E_MOTOR_BRAKE_BRAKE);
     autonSchedule.enqueue<move_pose_c>(
-        lemlib::Pose{ mx * 40_cm, my * 140_cm, adjustHeading(270, mx, my) },
+        lemlib::Pose{ mx * 40_cm, my * 143_cm, adjustHeading(270, mx, my) },
         chassis,
         poseCFG{ .reversed = true,
                  .minSpeed = 127,
                  .maxSpeed = 127,
-                 .timeout = 500 });
+                 .timeout = 700 });
     autonSchedule.enqueue<brake_c>(chassis, pros::E_MOTOR_BRAKE_COAST);
 
     while (autonSchedule.tick()) {

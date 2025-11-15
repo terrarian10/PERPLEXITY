@@ -317,12 +317,9 @@ void handleOuttakeCont() {
     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
         if (outtake.get_state() == Outt_States::TOP) {
             outtake.run_at_state(Outt_States::OFF);
-            middle_scorer.retract();
-            descorer_front.extend();
         } else {
             outtake.run_at_state(Outt_States::TOP);
             outtake.emergency(120, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
-            descorer_front.retract();
         }
     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
         if (outtake.get_state() == Outt_States::MIDDLE) {
