@@ -41,8 +41,7 @@ AirCylinder middle_scorer('a', false);
 // Make attacher wirj
 // AirCylinder attacher('g');
 // Doubleparrk
-AirCylinder descorer_front('c');
-AirCylinder descorer_l('b');
+AirCylinder descorer_l('c');
 
 pros::IMU imu(12);
 // pros::Rotation horizOdom(7);
@@ -51,19 +50,26 @@ pros::IMU imu(12);
 
 // Literally anything  is better than this method
 // Don't touch it it works
-pros::Motor outt_1(20, pros::MotorGearset::green);
+pros::Motor outt_1(20, pros::MotorGearset::blue);
 pros::Motor outt_2(5, pros::MotorGearset::blue);
 std::vector<pros::Motor> test = { outt_1, outt_2 };
 // AirCylinder scoring_cylinder('h');
 std::vector<AirCylinder> intake_cylinders = { middle_scorer };
-mecha_control outtake_ctrl = {
-    { { { { 0, 1 }, { 1, 1 }, { -1, 0 } }, Outt_States::TOP },
-      { { { 0, 1 }, { 1, 0 }, { -1, -1 } }, Outt_States::HOARD },
-      { { { 0, -1 }, { 1, 0 }, { -1, -1 } }, Outt_States::BOTTOM },
-      { { { 0, 1 }, { 1, 1 }, { -1, 1 } }, Outt_States::MIDDLE },
-      { { { 0, 0 }, { 1, 0 }, { -1, -1 } }, Outt_States::OFF } },
-    "Outtake"
-};
+mecha_control outtake_ctrl = { { { { { 0, 1 }, { 1, 1 }, { -1, 0 } },
+                                   Outt_States::TOP,
+                                   pros::E_CONTROLLER_DIGITAL_R1 },
+                                 { { { 0, 1 }, { 1, -0.5 }, { -1, -1 } },
+                                   Outt_States::HOARD,
+                                   pros::E_CONTROLLER_DIGITAL_L1 },
+                                 { { { 0, -1 }, { 1, 0 }, { -1, -1 } },
+                                   Outt_States::BOTTOM,
+                                   pros::E_CONTROLLER_DIGITAL_R2 },
+                                 { { { 0, 1 }, { 1, 1 }, { -1, 1 } },
+                                   Outt_States::MIDDLE,
+                                   pros::E_CONTROLLER_DIGITAL_L2 },
+                                 { { { 0, 0 }, { 1, 0 }, { -1, -1 } },
+                                   Outt_States::OFF } },
+                               "Outtake" };
 Outtake outtake(test,
                 intake_cylinders,
                 colorDetector,
@@ -135,11 +141,22 @@ ModularControl displayHandler(chassis,
  * All other competition modes are blocked by initialize; it is recommended    \
  * to keep execution time for this mode under a few seconds.                   \
  */
-
-void apr() { auton_one_side(-1, 1); }
-void anr() { auton_one_side(-1, -1); }
-void apb() { auton_one_side(1, 1); }
-void anb() { auton_one_side(1, -1); }
+void apr() {
+    isRed = true;
+    auton_one_side(-1, 1);
+}
+void anr() {
+    isRed = true;
+    auton_one_side(-1, -1);
+}
+void apb() {
+    isRed = false;
+    auton_one_side(1, 1);
+}
+void anb() {
+    isRed = false;
+    auton_one_side(1, -1);
+}
 void pid_test() { testing_pid(); }
 
 void skills() { auton_one_side(-1, 1, true); }
@@ -156,6 +173,7 @@ rd::Selector selector({
     { "autons_negative_blue", anb },
 });
 void initialize_macros() {
+    std::cout << outtake_ctrl.motorHandling.at(4).control;
     macros.reserve(2);
     macros.push_back({ { { -157, -118.9, 270, true },
                          { -157, 118.9, 270, true },
@@ -355,9 +373,6 @@ void handleControls() {
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
         descorer_l.toggle();
     }
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
-        descorer_front.toggle();
-    }
 }
 
 void opcontrol() {
@@ -385,6 +400,7 @@ void opcontrol() {
             anb();
             return;
         }
+        runMacros();
         displayUpdater(iteration); // Handles controller display
         // runMacros();               // Runs Macros
         driveControl(); // Controls Chassis

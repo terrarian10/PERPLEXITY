@@ -17,6 +17,7 @@
 #include "consts.hpp"
 #include "modularSubsystem.hpp"
 #include "pros/abstract_motor.hpp"
+#include "pros/misc.h"
 #include "pros/motor_group.hpp"
 #include "pros/rtos.hpp"
 #include <string>
@@ -29,6 +30,7 @@ struct single_control {
 struct multi_control {
     std::vector<single_control> soloCont;
     Outt_States id;
+    pros::controller_digital_e_t control;
 };
 struct mecha_control {
     std::vector<multi_control> motorHandling;
