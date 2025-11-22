@@ -76,7 +76,6 @@ Outtake outtake(test,
                 outtake_ctrl,
                 Outt_States::OFF,
                 6000);
-
 // lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2,
 // -3.83); lemlib::TrackingWheel horizontal2(&horizOdom2,
 // lemlib::Omniwheel::NEW_2, 3.3); lemlib::TrackingWheel vertical(&vertOdom,
