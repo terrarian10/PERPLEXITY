@@ -395,8 +395,9 @@ void opcontrol() {
     int iteration = 0;
     // watch afshin implode the bot
     while (true) {
-        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
-            anb();
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
+            master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+            apr();
             return;
         }
         runMacros();
