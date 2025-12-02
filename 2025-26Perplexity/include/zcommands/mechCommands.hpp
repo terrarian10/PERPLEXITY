@@ -3,9 +3,8 @@
 #include "consts.hpp"
 #include "lemlib/chassis/chassis.hpp"
 #include "pros/misc.h"
-#include "virtualController.hpp"
 
-class mech_state_c : command {
+class mech_state_c : public command {
   public:
     explicit mech_state_c(Outtake& outtake, Outt_States state)
         : outtake(outtake)
@@ -19,7 +18,7 @@ class mech_state_c : command {
     Outtake& outtake;
     Outt_States state;
 };
-class update_mech_state : command {
+class update_mech_state : public command {
   public:
     explicit update_mech_state(Outtake& outtake,
                                mecha_control& states,

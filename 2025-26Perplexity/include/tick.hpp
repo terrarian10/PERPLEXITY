@@ -1,4 +1,3 @@
-#include "main.h"
 enum botState { AUTONCTRL, OPCTRL, DISABLED };
 
 class ticker {

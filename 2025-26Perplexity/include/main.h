@@ -38,7 +38,7 @@
 #include "Outtake.hpp"     // IWYU pragma: export
 #include "airCylinder.hpp" // IWYU pragma: export
 #include "autons.hpp"      // IWYU pragma: export
-
+#include "virtualController.hpp"
 #include <iostream> // IWYU pragma: export
 
 extern pros::Controller master;
@@ -47,7 +47,7 @@ extern Outtake outtake;
 extern AirCylinder scraper;
 extern AirCylinder middle_scorer;
 extern AirCylinder descorer_l;
-
+extern virtualController temp;
 #endif
 
 /**

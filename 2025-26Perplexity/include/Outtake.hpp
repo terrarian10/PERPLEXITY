@@ -22,6 +22,12 @@
 #include "pros/rtos.hpp"
 #include <string>
 #include <vector>
+struct motorData {
+    double overheatLevel;
+    double velocity;
+    double friction;
+    double torque;
+};
 
 struct single_control {
     int motorID;
@@ -36,7 +42,13 @@ struct mecha_control {
     std::vector<multi_control> motorHandling;
     const char* taskID;
 };
-
+struct mechData {
+    std::vector<motorData> motors_info;
+    Outt_States current_state;
+    pros::controller_digital_e_t control;
+    multi_control current_direct_control;
+    pros::Task* current_task;
+};
 // Setup class
 class Outtake : public subsystem {
   public:
@@ -72,6 +84,7 @@ class Outtake : public subsystem {
     std::string log() override;
 
     void run() override;
+    mechData getData();
     inline void suspend() override { task.suspend(); };
     void initialize() override;
     // inline void quit() override { task.remove(); };

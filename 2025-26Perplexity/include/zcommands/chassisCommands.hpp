@@ -1,9 +1,8 @@
 #include "commandHandling.hpp"
 #include "lemlib/chassis/chassis.hpp"
+#include "main.h"
 #include "pros/misc.h"
-#include "virtualController.hpp"
-
-class tank_c : command {
+class tank_c : public command {
   public:
     explicit tank_c(lemlib::Chassis& chassis, virtualController& vc)
         : chassis(chassis)

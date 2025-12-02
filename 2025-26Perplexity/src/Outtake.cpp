@@ -1,5 +1,6 @@
 #include "Outtake.hpp"
 #include "consts.hpp"
+#include "pros/misc.h"
 #include "pros/rtos.h"
 #include "pros/rtos.hpp"
 #include <cassert>
@@ -100,4 +101,20 @@ std::string Outtake::log() {
     }
 
     return temps;
+}
+
+mechData Outtake::getData() {
+    std::vector<motorData> motors;
+    for (auto& i : this->motors) {
+        motors.emplace_back(
+            motorData{ i.get_temperature(),
+                       i.get_actual_velocity(),
+                       i.get_actual_velocity() / i.get_target_velocity(),
+                       i.get_torque() });
+    }
+
+    return mechData{
+        motors,
+        this->get_state_enum(),
+    };
 }

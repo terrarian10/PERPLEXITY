@@ -232,15 +232,72 @@ class brake_c : public command {
     lemlib::Chassis& chassis;
     pros::motor_brake_mode_e brake;
 };
+class repeat_cmd : public command {
+  public:
+    template<typename T>
+    explicit repeat_cmd(T&& inner_cmd)
+        : inner(std::make_unique<std::decay_t<T>>(std::forward<T>(inner_cmd))) {
+    }
+
+    void stop() { stopped = true; }
+
+    bool run() override {
+        if (stopped) return true; // Tell scheduler to remove me
+        inner->run();             // Run the wrapped command
+        return false;             // Keep repeating
+    }
+
+  private:
+    std::unique_ptr<command> inner;
+    bool stopped = false;
+};
+class group_repeat_cmd : public command {
+  public:
+    template<typename... Ts>
+    explicit group_repeat_cmd(Ts&&... cmds) {
+        // Fold expression over the argument pack
+        (add_one(std::forward<Ts>(cmds)), ...);
+    }
+
+    void stop() { stopped = true; }
+
+    bool run() override {
+        if (stopped) return true; // tell scheduler to remove this whole group
+
+        for (auto& c : commands) {
+            c->run(); // ignore inner return values; we control lifetime
+        }
+        return false; // keep repeating
+    }
+
+  private:
+    std::vector<std::unique_ptr<command>> commands;
+    bool stopped = false;
+
+    template<typename T>
+    void add_one(T&& cmd) {
+        using U = std::decay_t<T>;
+        static_assert(
+            std::is_base_of_v<command, U>,
+            "group_repeat_cmd can only contain types derived from command");
+
+        // Create a unique_ptr<command> that owns a U*
+        commands.emplace_back(
+            std::unique_ptr<command>(new U(std::forward<T>(cmd))));
+    }
+};
 
 class Scheduler {
   public:
-    template<class Cmd, class... Args>
-    void enqueue(Args&&... args) {
-        static_assert(std::is_base_of<command, Cmd>::value,
+    template<typename T, class... Args>
+    T& enqueue(Args&&... args) {
+        static_assert(std::is_base_of<command, T>::value,
                       "Cmd must derive from command");
+        auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
+        T& ref = *ptr;
         schedule.emplace_back(
-            std::make_unique<Cmd>(std::forward<Args>(args)...));
+            std::move(ptr)); // commands is vector<unique_ptr<command>>
+        return ref;
     }
 
     bool tick() {

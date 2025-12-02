@@ -15,7 +15,6 @@
 #include "pros/rotation.hpp"
 #include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
-#include "virtualController.hpp"
 #include <cstddef>
 #include <cstdlib>
 #include <vector>
@@ -55,21 +54,14 @@ pros::Motor outt_2(5, pros::MotorGearset::blue);
 std::vector<pros::Motor> test = { outt_1, outt_2 };
 // AirCylinder scoring_cylinder('h');
 std::vector<AirCylinder> intake_cylinders = { middle_scorer };
-mecha_control outtake_ctrl = { { { { { 0, 1 }, { 1, 1 }, { -1, 0 } },
-                                   Outt_States::TOP,
-                                   pros::E_CONTROLLER_DIGITAL_R1 },
-                                 { { { 0, 1 }, { 1, -0.5 }, { -1, -1 } },
-                                   Outt_States::HOARD,
-                                   pros::E_CONTROLLER_DIGITAL_L1 },
-                                 { { { 0, -1 }, { 1, 0 }, { -1, -1 } },
-                                   Outt_States::BOTTOM,
-                                   pros::E_CONTROLLER_DIGITAL_R2 },
-                                 { { { 0, 1 }, { 1, 1 }, { -1, 1 } },
-                                   Outt_States::MIDDLE,
-                                   pros::E_CONTROLLER_DIGITAL_L2 },
-                                 { { { 0, 0 }, { 1, 0 }, { -1, -1 } },
-                                   Outt_States::OFF } },
-                               "Outtake" };
+mecha_control outtake_ctrl = {
+    { { { { 0, 1 }, { 1, 1 }, { -1, 0 } }, Outt_States::TOP },
+      { { { 0, 1 }, { 1, -0.5 }, { -1, -1 } }, Outt_States::HOARD },
+      { { { 0, -1 }, { 1, 0 }, { -1, -1 } }, Outt_States::BOTTOM },
+      { { { 0, 1 }, { 1, 1 }, { -1, 1 } }, Outt_States::MIDDLE },
+      { { { 0, 0 }, { 1, 0 }, { -1, -1 } }, Outt_States::OFF } },
+    "Outtake"
+};
 Outtake outtake(test,
                 intake_cylinders,
                 colorDetector,
