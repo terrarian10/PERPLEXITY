@@ -22,7 +22,7 @@
 // #include "controller_data.hpp"
 
 #include "api.h" // IWYU pragma: export
-#include "autons.hpp"
+// #include "autons.hpp"
 #include "lemlib/api.hpp" // IWYU pragma: export
 #include "okapi/api.hpp"  // IWYU pragma: export
 #include "pros/abstract_motor.hpp"
@@ -48,6 +48,7 @@ extern AirCylinder scraper;
 extern AirCylinder middle_scorer;
 extern AirCylinder descorer_l;
 extern virtualController temp;
+extern mecha_control outtake_ctrl;
 #endif
 
 /**

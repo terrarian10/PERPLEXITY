@@ -7,6 +7,7 @@
 #include "lemlib/chassis/chassis.hpp"
 #include "lemlib/pose.hpp"
 #include "main.h"
+#include "pros/misc.h"
 #include "pros/motors.h"
 #include "pros/rtos.h"
 #include "pros/rtos.hpp"
@@ -26,13 +27,13 @@ class command {
 
 class outtake_c : public command {
   public:
-    explicit outtake_c(Outt_States state, Outtake& outtake)
+    explicit outtake_c(pros::controller_digital_e_t state, Outtake& outtake)
         : state_(state)
         , outtake_(outtake) {};
     bool run() override {
         // return true;
         outtake_.move(state_);
-        if (outtake_.get_state() == state_) {
+        if (outtake_.get_state_ctrl() == state_) {
             return true;
         } else {
             return false;
@@ -43,158 +44,27 @@ class outtake_c : public command {
 
   private:
     Outtake& outtake_;
-    Outt_States state_;
+    pros::controller_digital_e_t state_;
 };
-
-class togglePneu_c : public command {
+class outtake_toggle_c : public command {
   public:
-    explicit togglePneu_c(AirCylinder& air)
-        : air(air) {};
+    explicit outtake_toggle_c(bool state, Outtake& outtake)
+        : state_(state)
+        , outtake_(outtake) {};
     bool run() override {
-        air.toggle();
-        return true;
+        // return true;outtake
+        if (state_ == true) {
+            outtake_.run();
+        } else {
+            outtake.halt();
+        }
     }
     void quit() override {}
     void force_quit() override {}
 
   private:
-    AirCylinder& air;
-};
-
-class setPose_c : public command {
-  public:
-    explicit setPose_c(lemlib::Pose pose)
-        : pose(pose) {};
-    bool run() override {
-        pose.theta > 9000 ? pose.theta = chassis.getPose().theta : pose.theta;
-        chassis.setPose(pose);
-        std::cout << chassis.getPose().x;
-        return true;
-    }
-    void quit() override {}
-    void force_quit() override {}
-
-  private:
-    lemlib::Pose pose;
-};
-class move_point_c : public command {
-  public:
-    explicit move_point_c(float x,
-                          float y,
-                          lemlib::Chassis& chassis,
-                          poseCFG config = { false, 40, 127, 5000 })
-        : chassis(chassis)
-        , x(x)
-        , y(y)
-        , config(config)
-        , started(false) {};
-    bool run() override {
-        if (!started) {
-            chassis.moveToPoint(x,
-                                y,
-                                config.timeout,
-                                {
-                                    .forwards = !config.reversed,
-                                    .maxSpeed = float(config.maxSpeed),
-
-                                    .minSpeed = float(config.minSpeed),
-                                    .earlyExitRange = config.earlyExitRange,
-
-                                });
-            started = true;
-            return false;
-        }
-        return !chassis.isInMotion();
-        // std::cout << chassis.getPose().x << " " << chassis.getPose().y
-        //           << "--POSITION" << "\n";
-    }
-
-    void force_quit() override { chassis.cancelMotion(); }
-
-  private:
-    lemlib::Chassis& chassis;
-    float x;
-    float y;
-    poseCFG config;
-    bool started;
-};
-class move_pose_c : public command {
-  public:
-    explicit move_pose_c(lemlib::Pose pose,
-                         lemlib::Chassis& chassis,
-                         poseCFG config = { false, 40, 127, 5000 })
-        : chassis(chassis)
-        , pose(pose)
-        , config(config)
-        , started(false) {};
-    bool run() override {
-        if (!started) {
-            chassis.moveToPose(pose.x,
-                               pose.y,
-                               pose.theta,
-                               config.timeout,
-                               {
-                                   .forwards = !config.reversed,
-                                   .horizontalDrift = 8,
-                                   .maxSpeed = float(config.maxSpeed),
-
-                                   .minSpeed = float(config.minSpeed),
-                                   .earlyExitRange = config.earlyExitRange,
-
-                               });
-            started = true;
-            std::cout << "GOAL X: " << pose.x << " Y: " << pose.y
-                      << "ROT:" << pose.theta << "\n";
-
-            return false;
-        }
-        return !chassis.isInMotion();
-        // std::cout << chassis.getPose().x << " " << chassis.getPose().y
-        //           << "--POSITION" << "\n";
-    }
-
-    void force_quit() override { chassis.cancelMotion(); }
-
-  private:
-    lemlib::Chassis& chassis;
-    lemlib::Pose pose;
-    poseCFG config;
-    bool started;
-};
-
-class turn_heading_c : public command {
-  public:
-    explicit turn_heading_c(int dir,
-                            lemlib::Chassis& chassis,
-                            poseCFG config = { false, 40, 127, 5000 })
-        : chassis(chassis)
-        , dir(dir)
-        , config(config)
-        , started(false) {};
-    bool run() override {
-        if (!started) {
-            chassis.turnToHeading(dir,
-                                  config.timeout,
-                                  {
-                                      .maxSpeed = config.maxSpeed,
-                                      .minSpeed = config.minSpeed,
-                                      .earlyExitRange = config.earlyExitRange,
-                                  });
-            started = true;
-            return false;
-        }
-        return !chassis.isInMotion();
-        // std::cout << chassis.getPose().x << " " << chassis.getPose().y
-        //           << "--POSITION" << "\n";
-    }
-
-    void force_quit() override { chassis.cancelMotion(); }
-
-  private:
-    lemlib::Chassis& chassis;
-    int dir;
-    poseCFG config;
-    bool started;
+    Outtake& outtake_;
+    bool state_;
 };
 
 class wait_c : public command {

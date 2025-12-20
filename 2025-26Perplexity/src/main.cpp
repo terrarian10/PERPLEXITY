@@ -15,17 +15,18 @@
 #include "pros/rotation.hpp"
 #include "pros/rtos.hpp"
 #include "robodash/api.h" // IWYU pragma: export
+#include "tick.hpp"
 #include <cstddef>
 #include <cstdlib>
 #include <vector>
 
 // Chassis constructor
-pros::MotorGroup left_motors({ -10, -9, 8 }, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({ -1, 2, 3 }, pros::MotorGearset::blue);
+pros::MotorGroup left_motors({ 1, -2, -3 }, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({ 20, 19, -18 }, pros::MotorGearset::blue);
 // Piggyback off of purdues hard work
 lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               &right_motors, // right motor group
-                              13.82,         // 10 inch track width // 13.82?
+                              11.25,         // 10 inch track width // 13.82?
                               lemlib::Omniwheel::NEW_325,
                               360, // drivetrain rpm is 360
                               2    // horizontal drift is 2 (for now)
@@ -34,50 +35,63 @@ bool isRed;
 pros::Optical optical(30);
 ColourDetector colorDetector(optical);
 // Initialize the Scraper
-AirCylinder scraper('h', false);
+AirCylinder scraper('b', false);
 AirCylinder middle_scorer('a', false);
-
-// Make attacher wirj
+ticker& roboHandler() {
+    static ticker bot; // one persistent instance
+    return bot;
+} // Make attacher wirj
 // AirCylinder attacher('g');
 // Doubleparrk
 AirCylinder descorer_l('c');
 
-pros::IMU imu(12);
-// pros::Rotation horizOdom(7);
+pros::IMU imu(16);
+pros::Rotation horizOdom(9);
 // pros::Rotation horizOdom2(4);
-// pros::Rotation vertOdom(-11);
+pros::Rotation vertOdom(10);
 
 // Literally anything  is better than this method
 // Don't touch it it works
-pros::Motor outt_1(20, pros::MotorGearset::blue);
-pros::Motor outt_2(5, pros::MotorGearset::blue);
+pros::Motor outt_1(-17, pros::MotorGearset::blue);
+pros::Motor outt_2(-6, pros::MotorGearset::blue);
 std::vector<pros::Motor> test = { outt_1, outt_2 };
 // AirCylinder scoring_cylinder('h');
 std::vector<AirCylinder> intake_cylinders = { middle_scorer };
 mecha_control outtake_ctrl = {
-    { { { { 0, 1 }, { 1, 1 }, { -1, 0 } }, Outt_States::TOP },
-      { { { 0, 1 }, { 1, -0.5 }, { -1, -1 } }, Outt_States::HOARD },
-      { { { 0, -1 }, { 1, 0 }, { -1, -1 } }, Outt_States::BOTTOM },
-      { { { 0, 1 }, { 1, 1 }, { -1, 1 } }, Outt_States::MIDDLE },
-      { { { 0, 0 }, { 1, 0 }, { -1, -1 } }, Outt_States::OFF } },
+    { { { { 0, 1 }, { 1, 1 }, { -1, 0 } },
+        pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R1 },
+      { { { 0, 1 }, { 1, -1 }, { -1, 0 } },
+        pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L1 },
+      { { { 0, -1 }, { 1, 0 }, { -1, 0 } },
+        pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L2 },
+      { { { 0, 1 }, { 1, 1 }, { -1, 1 } },
+        pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R2 },
+      { { { 0, 0 }, { 1, 0 }, { -1, -1 } } } },
     "Outtake"
 };
+
+std::vector<single_control> outtake_idle = { { 0, 0 }, { 1, 0 }, { -1, 0 } };
 Outtake outtake(test,
                 intake_cylinders,
                 colorDetector,
                 outtake_ctrl,
-                Outt_States::OFF,
-                6000);
-// lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2,
-// -3.83); lemlib::TrackingWheel horizontal2(&horizOdom2,
-// lemlib::Omniwheel::NEW_2, 3.3); lemlib::TrackingWheel vertical(&vertOdom,
-// lemlib::Omniwheel::NEW_2, 2.5);
+                outtake_idle,
+                12000);
+lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2, -1.5);
+lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, -0.75);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
-    nullptr, //&vertical,   // vertical tracking wheel 1, set to nullptr
+    &vertical,   //&vertical,   // vertical tracking wheel 1, set to nullptr
+    nullptr,     // vertical tracking wheel 2
+    &horizontal, // horizontal tracking wheel 1
+    nullptr,     //&horizontal2, // horizontal tracking wheel 2
+    &imu         // imu
+);
+lemlib::OdomSensors imu_only(
+    nullptr,
     nullptr, // vertical tracking wheel 2
-    nullptr, //&horizontal, // horizontal tracking wheel 1
+    nullptr, // horizontal tracking wheel 1
     nullptr, //&horizontal2, // horizontal tracking wheel 2
     &imu     // imu
 );
@@ -85,14 +99,14 @@ lemlib::OdomSensors sensors(
 // Guess and check final boss
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(
-    15,  // proportional gain (kP) - 55 60 65 70 75 80
+    15,  // proportional gain (kP) - 15 55 60 65 70 75 80
     0,   // integral gain (kI)
-    9,   // derivative gain (kD) -- 24 32 32 33 34 36
-    3,   // anti windup3
+    11,  // derivative gain (kD) -- 9 32 32 33 34 36
+    0,   //-48.375, // anti windup3
     1,   // small error range, in inches1
-    75,  // small error range timeout, in milliseconds100
+    300, // small error range timeout, in milliseconds100
     3,   // large error range, in inches3
-    300, // large error range timeout, in milliseconds500
+    500, // large error range timeout, in milliseconds500
     0    // maximum acceleration (slew)0
 );
 
@@ -112,7 +126,7 @@ lemlib::ControllerSettings angular_controller(
 lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                         lateral_controller, // lateral PID settings
                         angular_controller, // angular PID settings
-                        sensors             // odometry sensors
+                        imu_only            // odometry sensors
 );
 
 std::vector<ModularControl::macro> macros;
@@ -138,11 +152,11 @@ void apr() {
 }
 void anr() {
     isRed = true;
-    auton_one_side(-1, -1);
+    auton_full(false);
 }
 void apb() {
     isRed = false;
-    auton_one_side(1, 1);
+    auton_full(true);
 }
 void anb() {
     isRed = false;
@@ -316,46 +330,46 @@ void handleEjection() {
     }
 }
 
-void handleOuttakeCont() {
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
-        if (outtake.get_state() == Outt_States::BOTTOM) {
-            outtake.run_at_state(Outt_States::OFF);
-        } else {
-            outtake.run_at_state(Outt_States::BOTTOM);
-        }
-    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
-        if (outtake.get_state() == Outt_States::TOP) {
-            outtake.run_at_state(Outt_States::OFF);
-        } else {
-            outtake.run_at_state(Outt_States::TOP);
-            outtake.emergency(120, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
-        }
-    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
-        if (outtake.get_state() == Outt_States::MIDDLE) {
-            outtake.run_at_state(Outt_States::OFF);
-        } else {
-            outtake.run_at_state(Outt_States::MIDDLE);
-            outtake.emergency(120, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
-        }
-    } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-        if (outtake.get_state() == Outt_States::HOARD) {
-            outtake.run_at_state(Outt_States::OFF);
-        } else {
-            outtake.run_at_state(Outt_States::HOARD);
-        }
-    }
+// void handleOuttakeCont() {
+//     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+//         if (outtake.get_state() == Outt_States::BOTTOM) {
+//             outtake.run_at_state(Outt_States::OFF);
+//         } else {
+//             outtake.run_at_state(Outt_States::BOTTOM);
+//         }
+//     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
+//         if (outtake.get_state() == Outt_States::TOP) {
+//             outtake.run_at_state(Outt_States::OFF);
+//         } else {
+//             outtake.run_at_state(Outt_States::TOP);
+//             outtake.emergency(120, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
+//         }
+//     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
+//         if (outtake.get_state() == Outt_States::MIDDLE) {
+//             outtake.run_at_state(Outt_States::OFF);
+//         } else {
+//             outtake.run_at_state(Outt_States::MIDDLE);
+//             outtake.emergency(120, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
+//         }
+//     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+//         if (outtake.get_state() == Outt_States::HOARD) {
+//             outtake.run_at_state(Outt_States::OFF);
+//         } else {
+//             outtake.run_at_state(Outt_States::HOARD);
+//         }
+//     }
 
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-        outtake.emergency(50, { { 0, 1 }, { 1, 1 }, { -1, -1 } });
-    }
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
-        outtake.emergency(150, { { 0, -1 }, { 1, -1 }, { -1, -1 } });
-    }
-}
+//     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+//         outtake.emergency(50, { { 0, 1 }, { 1, 1 }, { -1, -1 } });
+//     }
+//     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+//         outtake.emergency(150, { { 0, -1 }, { 1, -1 }, { -1, -1 } });
+//     }
+// }
 
 void handleControls() {
-    handleOuttakeCont();
-    // Toggle funny scrapers
+    // handleOuttakeCont();
+    //  Toggle funny scrapers
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
         scraper.toggle();
     }
@@ -368,37 +382,19 @@ void handleControls() {
 
 void opcontrol() {
 
-    // scraper.toggle();
-    //  UpdateDisplay
     displayHandler.updateDisplay(
         macros[displayHandler.get_active_address() - 1]);
-    // if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) &&
-    //     master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-    //     autonomous();
-    //     return;
-    // }
 
     // Set Brake Mode
     pros::motor_brake_mode_e_t driver_preference_brake =
         pros::E_MOTOR_BRAKE_COAST;
-
+    roboHandler().command_opcontrol();
     chassis.setBrakeMode(driver_preference_brake);
 
     int iteration = 0;
     // watch afshin implode the bot
     while (true) {
-        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
-            master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-            apr();
-            return;
-        }
-        runMacros();
-        displayUpdater(iteration); // Handles controller display
-        // runMacros();               // Runs Macros
-        driveControl(); // Controls Chassis
-        // handleEjection(); // Ejects incorrect color bloaks
-        handleControls(); // Handles mechanism controls
-        pros::delay(10);  // Timer calculations
-        iteration++;
+        roboHandler().tick();
+        pros::delay(10);
     }
 }

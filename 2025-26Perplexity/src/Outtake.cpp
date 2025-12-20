@@ -20,23 +20,16 @@ run() runs the current task
 
 */
 
-void Outtake::run() {
-
-    // please dont explode I barely understand how this works
-    // if (task.get_state() != pros::E_TASK_STATE_DELETED) { task.remove(); }
-
-    // 50/50 chance the task actually works
-    if (task.get_state() == pros::E_TASK_STATE_INVALID ||
-        task.get_state() == pros::E_TASK_STATE_DELETED) {}
-};
+void Outtake::run() { isRunning = true; };
+void Outtake::halt() { isRunning = false; };
 
 void Outtake::loop() {
     uint32_t timer = 0;
     // Move motors differently depending on what needs to be done
-    while (true) {
 
+    if (isRunning) {
         for (auto& r : mechHandler.motorHandling) {
-            if (state == r.id) {
+            if (state == r.control) {
                 for (const auto& i : r.soloCont) {
                     if (i.motorID >= 0) {
                         this->motors.at(i.motorID).move_voltage(i.moveMPL *
@@ -53,43 +46,61 @@ void Outtake::loop() {
                 }
             }
         }
+    } else {
+        for (const auto& i : idle_state) {
+            if (i.motorID >= 0) {
+                this->motors.at(i.motorID).move_voltage(i.moveMPL * 12000);
+            } else {
+                if (i.moveMPL != -1 &&
+                            air.at(std::abs(i.motorID) - 1).get_value() !=
+                                i.moveMPL
+                        ? true
+                        : false) {
+                    this->air.at(std::abs(i.motorID) - 1)
+                        .set_value(i.moveMPL == 1 ? true : false);
+                }
+            }
+        }
+
         pros::delay(20);
     }
     pros::delay(20);
 };
 
 void Outtake::emergency(int delay, std::vector<single_control> override) {
-    task.suspend();
-    for (const auto& i : override) {
-        if (i.motorID >= 0) {
-            this->motors.at(i.motorID).move_voltage(i.moveMPL * 12000);
-        } else {
-            if (i.moveMPL != -1 &&
-                        air.at(std::abs(i.motorID) - 1).get_value() != i.moveMPL
-                    ? true
-                    : false) {
-                this->air.at(std::abs(i.motorID) - 1)
-                    .set_value(i.moveMPL == 1 ? true : false);
-                std::cout << "UPDATING PNEU" << std::endl;
-            }
-            std::cout << "Try update pneu" << std::endl;
-        }
-    }
+    // task.suspend();
+    // for (const auto& i : override) {
+    //     if (i.motorID >= 0) {
+    //         this->motors.at(i.motorID).move_voltage(i.moveMPL * 12000);
+    //     } else {
+    //         if (i.moveMPL != -1 &&
+    //                     air.at(std::abs(i.motorID) - 1).get_value() !=
+    //                     i.moveMPL
+    //                 ? true
+    //                 : false) {
+    //             this->air.at(std::abs(i.motorID) - 1)
+    //                 .set_value(i.moveMPL == 1 ? true : false);
+    //             std::cout << "UPDATING PNEU" << std::endl;
+    //         }
+    //         std::cout << "Try update pneu" << std::endl;
+    //     }
+    // }
 
-    pros::delay(delay); // TODO:: ACCOUNT FOR MOTOR TORQUE
-                        // HIGHER TORQUE IS LESS SPEED, HOWEVER
-                        // THAT IS IN TURN DEPENDING ON WATTAGE
-                        // BECAUSE WHYYYYYY SO USE THAT TOO
-    task.resume();
+    // pros::delay(delay); // TODO:: ACCOUNT FOR MOTOR TORQUE
+    //                     // HIGHER TORQUE IS LESS SPEED, HOWEVER
+    //                     // THAT IS IN TURN DEPENDING ON WATTAGE
+    //                     // BECAUSE WHYYYYYY SO USE THAT TOO
+    // task.resume();
 }
 
 void Outtake::initialize() {
-    move(Outt_States::OFF);
+    move(pros::E_CONTROLLER_DIGITAL_L1);
+    isRunning = false;
 
-    task = pros::Task([this]() -> void { this->loop(); },
-                      TASK_PRIORITY_MIN,
-                      4096,
-                      mechHandler.taskID);
+    // task = pros::Task([this]() -> void { this->loop(); },
+    //                   TASK_PRIORITY_MIN,
+    //                   4096,
+    //                   mechHandler.taskID);
 }
 
 std::string Outtake::log() {
@@ -115,6 +126,6 @@ mechData Outtake::getData() {
 
     return mechData{
         motors,
-        this->get_state_enum(),
+        this->get_state_ctrl(),
     };
 }

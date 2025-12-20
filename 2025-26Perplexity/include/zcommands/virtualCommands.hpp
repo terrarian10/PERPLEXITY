@@ -1,8 +1,9 @@
 #include "commandHandling.hpp"
-#include "consts.hpp"
 #include "pros/misc.h"
-#include "pros/misc.hpp"
-#include "virtualController.hpp"
+// #include "consts.hpp"
+// #include "pros/misc.h"
+// #include "pros/misc.hpp"
+// #include "virtualController.hpp"
 
 class init_controller_c : public command {
   public:
@@ -27,8 +28,13 @@ class update_controller_c : public command {
         , controller(controller) {}
 
     bool run() override {
-        // digital buttons
+        vc.clearNewPress();
+        //  digital buttons
         for (auto& i : digital_buttons) {
+            if (!vc.get_button(i) && controller.get_digital(i)) {
+                vc.addNewPress(i);
+            }
+            // std::cout << controller.get_digital_new_press(i);
             vc.set_button(i, controller.get_digital(i));
         }
 

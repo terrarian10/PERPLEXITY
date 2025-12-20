@@ -1,7 +1,14 @@
+#pragma once
+#include "commandHandling.hpp"
+
 enum botState { AUTONCTRL, OPCTRL, DISABLED };
 
 class ticker {
   public:
+    Scheduler scheduler{}; // persistent scheduler
+    Scheduler& botScheduler() { return scheduler; }
+
+    virtualController mainVirutal{};
     void tick();
-    botState bot_state;
+    void command_opcontrol();
 };
