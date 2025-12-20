@@ -1,11 +1,13 @@
 #include "commandHandling.hpp"
 #include "lemlib/chassis/chassis.hpp"
+#include "lemlib/pose.hpp"
 #include "main.h"
 #include "pros/misc.h"
 struct point {
     float x;
     float y;
 };
+
 class tank_c : public command {
   public:
     explicit tank_c(lemlib::Chassis& chassis, virtualController& vc)
@@ -85,7 +87,7 @@ class movepoint_c : public command {
                          lemlib::Chassis& chassis,
                          float mx,
                          float my,
-                         poseCFG config = { false, 40, 127, 5000 })
+                         poseCFG config = { false, 0, 127, 5000 })
         : chassis(chassis)
         , target(target)
         , mx(mx)
@@ -172,7 +174,7 @@ class movepose_c : public command {
                         lemlib::Chassis& chassis,
                         float mx,
                         float my,
-                        poseCFG config = { false, 40, 127, 5000 })
+                        poseCFG config = { false, 0, 127, 5000 })
         : chassis(chassis)
         , pose(pose)
         , config(config)

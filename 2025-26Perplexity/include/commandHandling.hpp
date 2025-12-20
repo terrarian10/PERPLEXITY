@@ -58,6 +58,7 @@ class outtake_toggle_c : public command {
         } else {
             outtake.halt();
         }
+        return true;
     }
     void quit() override {}
     void force_quit() override {}

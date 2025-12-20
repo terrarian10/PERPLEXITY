@@ -19,5 +19,6 @@ void ticker::command_opcontrol() {
         tank_c(chassis, mainVirutal),
         update_mech_state(outtake, outtake_ctrl, mainVirutal),
         update_mech(outtake),
-        update_pneu(airs, pneuCtrl, mainVirutal));
+        update_pneu(airs, pneuCtrl, mainVirutal),
+        wait_c(10));
 }

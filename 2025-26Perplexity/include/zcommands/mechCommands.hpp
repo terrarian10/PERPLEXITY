@@ -10,11 +10,12 @@
 class mech_state_c : public command {
   public:
     explicit mech_state_c(pros::controller_digital_e_t state, Outtake& outtake)
-        : outtake(outtake)
-        , state(state) {};
+        : state(state)
+        , outtake(outtake) {};
     bool run() override {
         outtake.run_at_state(state);
-        return true;
+        outtake.loop();
+        return (outtake.get_state() == state && outtake.getRunning());
     };
 
   private:

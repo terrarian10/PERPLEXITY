@@ -45,10 +45,10 @@ ticker& roboHandler() {
 // Doubleparrk
 AirCylinder descorer_l('c');
 
-pros::IMU imu(16);
+pros::IMU imu(10);
 pros::Rotation horizOdom(9);
 // pros::Rotation horizOdom2(4);
-pros::Rotation vertOdom(10);
+pros::Rotation vertOdom(4);
 
 // Literally anything  is better than this method
 // Don't touch it it works
@@ -78,7 +78,7 @@ Outtake outtake(test,
                 outtake_idle,
                 12000);
 lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2, -1.5);
-lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, -0.75);
+lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, 1.25);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
@@ -126,7 +126,7 @@ lemlib::ControllerSettings angular_controller(
 lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                         lateral_controller, // lateral PID settings
                         angular_controller, // angular PID settings
-                        imu_only            // odometry sensors
+                        sensors             // odometry sensors
 );
 
 std::vector<ModularControl::macro> macros;
@@ -395,6 +395,10 @@ void opcontrol() {
     // watch afshin implode the bot
     while (true) {
         roboHandler().tick();
-        pros::delay(10);
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
+            pros::E_CONTROLLER_DIGITAL_B) {
+            apb();
+            return;
+        }
     }
 }
