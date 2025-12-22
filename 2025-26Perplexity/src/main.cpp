@@ -29,7 +29,7 @@ lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               11.25,         // 10 inch track width // 13.82?
                               lemlib::Omniwheel::NEW_325,
                               360, // drivetrain rpm is 360
-                              2    // horizontal drift is 2 (for now)
+                              8    // horizontal drift is 2 (for now)
 );
 bool isRed;
 pros::Optical optical(30);
@@ -46,8 +46,8 @@ ticker& roboHandler() {
 AirCylinder descorer_l('c');
 
 pros::IMU imu(10);
-pros::Rotation horizOdom(9);
-// pros::Rotation horizOdom2(4);
+// pros::Rotation horizOdom(9);
+//  pros::Rotation horizOdom2(4);
 pros::Rotation vertOdom(4);
 
 // Literally anything  is better than this method
@@ -60,7 +60,7 @@ std::vector<AirCylinder> intake_cylinders = { middle_scorer };
 mecha_control outtake_ctrl = {
     { { { { 0, 1 }, { 1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R1 },
-      { { { 0, 1 }, { 1, -1 }, { -1, 0 } },
+      { { { 0, 1 }, { 1, -0.5 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L1 },
       { { { 0, -1 }, { 1, 0 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L2 },
@@ -77,16 +77,18 @@ Outtake outtake(test,
                 outtake_ctrl,
                 outtake_idle,
                 12000);
-lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2, -1.5);
-lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, 1.25);
+
+// lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2, -1.5);
+lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, -1);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
-    &vertical,   //&vertical,   // vertical tracking wheel 1, set to nullptr
-    nullptr,     // vertical tracking wheel 2
-    &horizontal, // horizontal tracking wheel 1
-    nullptr,     //&horizontal2, // horizontal tracking wheel 2
-    &imu         // imu
+    &vertical, //&vertical,   // vertical tracking wheel 1, set to nullptr
+    nullptr,   // vertical tracking wheel 2
+    nullptr,
+    //&horizontal, // horizontal tracking wheel 1
+    nullptr, //&horizontal2, // horizontal tracking wheel 2
+    &imu     // imu
 );
 lemlib::OdomSensors imu_only(
     nullptr,
@@ -99,27 +101,27 @@ lemlib::OdomSensors imu_only(
 // Guess and check final boss
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(
-    15,  // proportional gain (kP) - 15 55 60 65 70 75 80
+    28,  // proportional gain (kP) - 15 55 60 65 70 75 80
     0,   // integral gain (kI)
-    11,  // derivative gain (kD) -- 9 32 32 33 34 36
-    0,   //-48.375, // anti windup3
+    9,   // derivative gain (kD) -- 9 32 32 33 34 36
+    3,   //-48.375, // anti windup3
     1,   // small error range, in inches1
-    300, // small error range timeout, in milliseconds100
+    100, // small error range timeout, in milliseconds100
     3,   // large error range, in inches3
     500, // large error range timeout, in milliseconds500
-    0    // maximum acceleration (slew)0
+    20   // maximum acceleration (slew)0
 );
 
 lemlib::ControllerSettings angular_controller(
-    4,   // kP – start here again or even 3
+    4.1, // kP – start here again or even 3
     0,   // kI – keep off for now
-    25,  // kD – moderate, not 400
-    3,   // anti windup (does nothing until you use I, but fine)
-    1,   // small error range (deg)
-    100, // small error timeout (ms)
-    3,   // large error range (deg)
-    300, // large error timeout (ms)
-    40   // slew – limit acceleration so it doesn't slam
+    26,  // kD – moderate, not 400
+    3,   // 3 anti windup (does nothing until you use I, but fine)
+    1,   // 1 small error range (deg)
+    100, // 100 small error timeout (ms)
+    3,   // 3 large error range (deg)
+    500, // 300 large error timeout (ms)
+    0    // 40 slew – limit acceleration so it doesn't slam
 );
 
 // create the chassis

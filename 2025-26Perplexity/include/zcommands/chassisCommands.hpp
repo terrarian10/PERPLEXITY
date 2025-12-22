@@ -29,7 +29,7 @@ class setPose_c : public command {
     explicit setPose_c(lemlib::Pose pose)
         : pose(pose) {};
     bool run() override {
-        pose.theta > 9000 ? pose.theta = chassis.getPose().theta : pose.theta;
+        pose.theta = pose.theta > 9000 ? chassis.getPose().theta : pose.theta;
         chassis.setPose(pose);
         std::cout << chassis.getPose().x;
         return true;
