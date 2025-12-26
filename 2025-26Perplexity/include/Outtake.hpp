@@ -33,6 +33,7 @@ struct motorData {
 struct single_control {
     int motorID;
     double moveMPL;
+    double efficiencyOverride = 0.1;
 };
 struct multi_control {
     std::vector<single_control> soloCont;

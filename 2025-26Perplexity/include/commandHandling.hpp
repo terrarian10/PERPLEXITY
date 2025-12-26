@@ -186,7 +186,10 @@ class Scheduler {
             std::cout << "Removed. At Size: " << schedule.size()
                       << " RESULT AT: " << chassis.getPose().x * 2.54 << " "
                       << chassis.getPose().y * 2.54 << " "
-                      << chassis.getPose().theta << "Degrees" << std::endl
+                      << (chassis.getPose().theta < 360
+                              ? chassis.getPose().theta
+                              : chassis.getPose().theta - 360)
+                      << "Degrees" << std::endl
                       << outtake.log();
             tick();
         }

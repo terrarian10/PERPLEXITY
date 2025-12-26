@@ -13,9 +13,10 @@ class mech_state_c : public command {
         : state(state)
         , outtake(outtake) {};
     bool run() override {
-        outtake.run_at_state(state);
+        outtake.move(state);
+        outtake.run();
         outtake.loop();
-        return (outtake.get_state() == state && outtake.getRunning());
+        return true;
     };
 
   private:
