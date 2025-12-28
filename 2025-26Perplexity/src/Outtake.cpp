@@ -32,11 +32,11 @@ void Outtake::loop() {
             if (state == r.control) {
                 for (const auto& i : r.soloCont) {
                     if (i.motorID >= 0) {
-                        this->motors.at(i.motorID).move_voltage(
-                            i.moveMPL *
-                            (this->motors.at(i.motorID).get_efficiency() > 0.9
-                                 ? 12000
-                                 : (i.efficiencyOverride * 12000)));
+                        this->motors.at(i.motorID).move_voltage(i.moveMPL *
+                                                                12000);
+                        // (this->motors.at(i.motorID).get_efficiency() > -1
+                        //      ? 12000
+                        //      : (i.efficiencyOverride * 12000)));
                     } else {
                         if (i.moveMPL != -1 && air.at(std::abs(i.motorID) - 1)
                                                        .get_value() != i.moveMPL

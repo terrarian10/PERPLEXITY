@@ -195,8 +195,8 @@ class movepose_c : public command {
                 h = std::fmod(180.0 - h, 360.0);
                 if (h < 0) h += 360.0;
             }
-            chassis.moveToPose(pose.x / 2.54,
-                               pose.y / 2.54,
+            chassis.moveToPose(pose.x / 2.54 * mx,
+                               pose.y / 2.54 * my,
                                h,
                                config.timeout,
                                {

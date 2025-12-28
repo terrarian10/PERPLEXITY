@@ -400,7 +400,7 @@ void opcontrol() {
         roboHandler().tick();
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
             pros::E_CONTROLLER_DIGITAL_B) {
-            apb();
+            anb();
             return;
         }
         if (iteration % 50 == 0) {
@@ -408,6 +408,14 @@ void opcontrol() {
                       << std::endl;
             std::cout << "Outtake Motor TEMP: " << outt_1.get_temperature()
                       << std::endl;
+            std::cout << "Motors Left - Drive "
+                      << left_motors.get_temperature(0) << " "
+                      << left_motors.get_temperature(1) << " "
+                      << left_motors.get_temperature(2) << std::endl;
+            std::cout << "Motors Right - Drive "
+                      << right_motors.get_temperature(0) << " "
+                      << right_motors.get_temperature(1) << " "
+                      << right_motors.get_temperature(2) << std::endl;
         }
 
         iteration++;
