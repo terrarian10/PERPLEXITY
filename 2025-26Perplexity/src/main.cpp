@@ -49,7 +49,7 @@ AirCylinder descorer_l('c');
 pros::IMU imu(10);
 // pros::Rotation horizOdom(9);
 //  pros::Rotation horizOdom2(4);
-pros::Rotation vertOdom(4);
+pros::Rotation vertOdom(-4);
 
 // Literally anything  is better than this method
 // Don't touch it it works
@@ -80,7 +80,7 @@ Outtake outtake(test,
                 12000);
 
 // lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2, -1.5);
-lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, -1);
+lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, -0.5);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
@@ -155,11 +155,19 @@ void apr() {
 }
 void anr() {
     isRed = true;
+    auton_one_side(-1, -1);
+}
+void anr_full() {
+    isRed = true;
     auton_full(false);
+}
+void apb_full() {
+    isRed = false;
+    auton_full(true);
 }
 void apb() {
     isRed = false;
-    auton_full(true);
+    auton_one_side(1, 1);
 }
 void anb() {
     isRed = false;
@@ -171,6 +179,8 @@ void skills() { auton_one_side(-1, 1, true); }
 
 // It looks nice
 rd::Selector selector({
+    { "autons_positive_blue_full", apb_full },
+    { "autons_negative_red_full", anr_full },
     { "autons_positive_red", apr },
 
     { "autons_negative_red", anr },

@@ -7,7 +7,13 @@ struct point {
     float x;
     float y;
 };
-
+struct swingCFG {
+    float maxSpeed = 127;
+    float minSpeed = 0;
+    float timeout = 5000;
+    float earlyExitRange = 1;
+    lemlib::AngularDirection dirPath;
+};
 class tank_c : public command {
   public:
     explicit tank_c(lemlib::Chassis& chassis, virtualController& vc)
@@ -262,6 +268,62 @@ class turn_heading_c : public command {
     lemlib::Chassis& chassis;
     int dir;
     poseCFG config;
+    bool started;
+};
+class swing_heading_c : public command {
+  public:
+    explicit swing_heading_c(
+        int dir,
+        lemlib::DriveSide lockedSide,
+        lemlib::Chassis& chassis,
+        int mx,
+        int my,
+        swingCFG config = { 127, 0, 5000, 1, lemlib::AngularDirection::AUTO })
+        : chassis(chassis)
+        , dir(dir)
+        , mx(mx)
+        , my(my)
+        , lockedSide(lockedSide)
+        , config(config)
+        , started(false) {};
+    bool run() override {
+        if (mx != -1) {
+            dir = std::fmod(360.0 - dir, 360.0);
+            if (dir < 0) dir += 360.0;
+        }
+
+        // Mirror across X-axis (top ↔ bottom)
+        if (my != +1) {
+            dir = std::fmod(180.0 - dir, 360.0);
+            if (dir < 0) dir += 360.0;
+        }
+        if (360 > dir) { dir -= 360; }
+        if (!started) {
+            chassis.swingToHeading(
+                dir,
+                lockedSide,
+                config.timeout,
+                { .direction = config.dirPath,
+                  .maxSpeed = static_cast<float>(config.maxSpeed),
+                  .minSpeed = static_cast<float>(config.minSpeed),
+                  .earlyExitRange = config.earlyExitRange });
+            started = true;
+            return false;
+        }
+        return !chassis.isInMotion();
+        // std::cout << chassis.getPose().x << " " << chassis.getPose().y
+        //           << "--POSITION" << "\n";
+    }
+
+    void force_quit() override { chassis.cancelMotion(); }
+
+  private:
+    lemlib::Chassis& chassis;
+    int dir;
+    int mx;
+    int my;
+    lemlib::DriveSide lockedSide;
+    swingCFG config;
     bool started;
 };
 class turnheading_c : public command {
