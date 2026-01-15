@@ -63,7 +63,7 @@ mecha_control outtake_ctrl = {
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R1 },
       { { { 0, 1 }, { 1, -0.5, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L1 },
-      { { { 0, -1 }, { 1, 0, 1 }, { -1, 0 } },
+      { { { 0, -1 }, { 1, -1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L2 },
       { { { 0, 1 }, { 1, 1, 1 }, { -1, 1 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R2 },
@@ -98,7 +98,13 @@ lemlib::OdomSensors imu_only(
     nullptr, //&horizontal2, // horizontal tracking wheel 2
     &imu     // imu
 );
-
+lemlib::OdomSensors nan_sensor(
+    nullptr,
+    nullptr, // vertical tracking wheel 2
+    nullptr, // horizontal tracking wheel 1
+    nullptr, //&horizontal2, // horizontal tracking wheel 2
+    nullptr  // imu
+);
 // Guess and check final boss
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(
@@ -159,11 +165,11 @@ void anr() {
 }
 void anr_full() {
     isRed = true;
-    auton_full(false);
+    auton_full(false, false);
 }
 void apb_full() {
     isRed = false;
-    auton_full(true);
+    auton_full(true, false);
 }
 void apb() {
     isRed = false;
@@ -175,7 +181,7 @@ void anb() {
 }
 void pid_test() { testing_pid(); }
 
-void skills() { auton_one_side(-1, 1, true); }
+void skills() { park(); }
 
 // It looks nice
 rd::Selector selector({
@@ -409,8 +415,8 @@ void opcontrol() {
     while (true) {
         roboHandler().tick();
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
-            pros::E_CONTROLLER_DIGITAL_B) {
-            anb();
+            master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+            apb_full();
             return;
         }
         if (iteration % 50 == 0) {

@@ -19,3 +19,10 @@ const std::list<pros::controller_digital_e_t> digital_buttons = {
     pros::E_CONTROLLER_DIGITAL_R1,   pros::E_CONTROLLER_DIGITAL_UP,
     pros::E_CONTROLLER_DIGITAL_DOWN, pros::E_CONTROLLER_DIGITAL_B
 };
+
+struct box {
+    float minX;
+    float minY;
+    float maxX;
+    float maxY;
+};
