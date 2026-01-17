@@ -208,14 +208,14 @@ void auton_one_side(float mx, float my, bool doSkills) {
         poseCFG{ .reversed = true, .minSpeed = 85, .timeout = 900 });
 
     autonSchedule.enqueue<movepose_c>(
-        lemlib::Pose{ 70, 125, 270 },
+        lemlib::Pose{ 70, 126, 270 },
         chassis,
         mx,
         my,
         poseCFG{ .reversed = true, .minSpeed = 25, .timeout = 900 });
 
     autonSchedule.enqueue<mech_state_c>(OUT_TOP, outtake);
-    autonSchedule.enqueue<movepose_c>(lemlib::Pose{ 0, 124, 270 },
+    autonSchedule.enqueue<movepose_c>(lemlib::Pose{ 0, 126, 270 },
                                       chassis,
                                       mx,
                                       my,
@@ -233,7 +233,7 @@ void auton_one_side(float mx, float my, bool doSkills) {
         my,
         poseCFG{ .minSpeed = 127, .maxSpeed = 127, .timeout = 150 });
     autonSchedule.enqueue<movepoint_c>(
-        point{ 105, float((type == 1) ? 163.0 : 90) },
+        point{ 105, float((type == 1) ? 163.0 : 93.6) },
         chassis,
         mx,
         my,
@@ -242,7 +242,7 @@ void auton_one_side(float mx, float my, bool doSkills) {
         270, chassis, mx, my, poseCFG{ .timeout = 600 });
     autonSchedule.enqueue<togglePneu_c>(descorer_l);
     autonSchedule.enqueue<movepoint_c>(
-        point{ 37, float((type == 1) ? 163.0 : 90) },
+        point{ 37, float((type == 1) ? 163.0 : 96) },
         chassis,
         mx,
         my,
@@ -251,7 +251,7 @@ void auton_one_side(float mx, float my, bool doSkills) {
                  .maxSpeed = 127,
                  .timeout = 800 });
     autonSchedule.enqueue<movepose_c>(
-        lemlib::Pose{ 40, float((type == 1) ? 163.0 : 92), 270 },
+        lemlib::Pose{ 40, float((type == 1) ? 163.0 : 96), 270 },
         chassis,
         mx,
         my,
@@ -259,6 +259,7 @@ void auton_one_side(float mx, float my, bool doSkills) {
                  .minSpeed = 60,
                  .maxSpeed = 127,
                  .timeout = 1200 });
+    // THIS IS SO SCUMMY WHAT DA HAIL
     autonSchedule.enqueue<swing_heading_c>(
         340,
         lemlib::DriveSide::LEFT,
@@ -351,14 +352,14 @@ void auton_full(bool isBlue, bool doSkills) {
         poseCFG{ .reversed = true, .minSpeed = 85, .timeout = 900 });
 
     autonSchedule.enqueue<movepose_c>(
-        lemlib::Pose{ 70, 122, 270 },
+        lemlib::Pose{ 70, 126.5, 270 },
         chassis,
         mx,
         my,
         poseCFG{ .reversed = true, .minSpeed = 25, .timeout = 900 });
 
     autonSchedule.enqueue<mech_state_c>(OUT_TOP, outtake);
-    autonSchedule.enqueue<movepose_c>(lemlib::Pose{ 0, 122, 270 },
+    autonSchedule.enqueue<movepose_c>(lemlib::Pose{ 0, 126.5, 270 },
                                       chassis,
                                       mx,
                                       my,
@@ -370,7 +371,7 @@ void auton_full(bool isBlue, bool doSkills) {
 
     autonSchedule.enqueue<togglePneu_c>(scraper);
     autonSchedule.enqueue<movepoint_c>(
-        point{ 999, 120 },
+        point{ 999, 125 },
         chassis,
         mx,
         my,
@@ -410,14 +411,14 @@ void auton_full(bool isBlue, bool doSkills) {
     //     poseCFG{ .reversed = true, .minSpeed = 80, .timeout = 300 });
 
     autonSchedule.enqueue<movepose_c>(
-        lemlib::Pose{ 20, -30, 225 },
+        lemlib::Pose{ 18, -18, 225 },
         chassis,
         mx,
         my,
-        poseCFG{ .reversed = true, .minSpeed = 20, .timeout = 495 });
+        poseCFG{ .reversed = true, .minSpeed = 20, .timeout = 900 });
     autonSchedule.enqueue<mech_state_c>(OUT_MIDDLE, outtake);
     autonSchedule.enqueue<movepose_c>(
-        lemlib::Pose{ 20, -30, 225 },
+        lemlib::Pose{ 18, -18, 225 },
         chassis,
         mx,
         my,
@@ -463,7 +464,7 @@ void auton_full(bool isBlue, bool doSkills) {
         mx,
         my,
         poseCFG{ .maxSpeed = 110, .timeout = 400 });
-    autonSchedule.enqueue<movepose_c>(lemlib::Pose{ 70, -119, 270 },
+    autonSchedule.enqueue<movepose_c>(lemlib::Pose{ 70, -121, 270 },
                                       chassis,
                                       mx,
                                       my,
@@ -472,7 +473,7 @@ void auton_full(bool isBlue, bool doSkills) {
                                                .maxSpeed = 127,
                                                .timeout = 800 });
     autonSchedule.enqueue<mech_state_c>(OUT_TOP, outtake);
-    autonSchedule.enqueue<movepose_c>(lemlib::Pose{ 0, -119, 270 },
+    autonSchedule.enqueue<movepose_c>(lemlib::Pose{ 0, -121, 270 },
                                       chassis,
                                       mx,
                                       my,
