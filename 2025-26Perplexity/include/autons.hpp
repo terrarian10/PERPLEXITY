@@ -31,6 +31,8 @@ extern lemlib::Chassis chassis;
 
 void park();
 void auton_full(bool isBlue, bool doSkills);
+void auto_bottomGoal(bool isBlue);
+
 void autons_positive_red();
 void autons_positive_blue();
 void autons_negative_red();

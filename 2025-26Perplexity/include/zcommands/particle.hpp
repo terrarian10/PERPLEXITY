@@ -1,10 +1,12 @@
 #include "autons.hpp"
+#include "lemlib/chassis/chassis.hpp"
 #include "lemlib/pose.hpp"
 #include "zcommands/math.hpp"
 #include "zcommands/structs.hpp"
 #include <cstddef>
 #include <cstdlib>
 #include <map>
+#include <numeric>
 #include <optional>
 #include <random>
 #include <variant>
@@ -58,7 +60,7 @@ inline void updateParticles(std::vector<particle>& particles,
     for (auto& p : particles) {
         p.pose.x += movement.x + linN(rng);
         p.pose.y += movement.y + linN(rng);
-        p.pose.theta += movement.theta + angN(rng);
+        p.pose.theta = wrapDeg(p.pose.theta + movement.theta + angN(rng));
     }
 }
 
@@ -74,7 +76,7 @@ inline float getParticleScore(const particle& p,
                               float largeErr) {
     std::vector<float> diffs;
     diffs.reserve(8);
-    // One-line-per-sensor, but no repeated boilerplate logic.
+
     auto addDiff = [&](const std::optional<float>& a,
                        const std::optional<float>& b) {
         if (a && b) diffs.push_back(std::abs(*a - *b));
@@ -96,42 +98,113 @@ inline float getParticleScore(const particle& p,
             chassis.sensorData.distSenseData.back1);
     addDiff(p.sensorData.distSenseData.back2,
             chassis.sensorData.distSenseData.back2);
-    float score = std::accumulate(diffs.begin(), diffs.end(), 0.0f);
-    float mean = score / diffs.size();
-    auto checkDiff = [&](float diff, float mean, float threshhold) -> bool {
-        return std::abs(diff - mean) < threshhold;
-    };
 
-    for (auto& diff : diffs) {
-        if (!checkDiff(diff, mean, largeErr)) {
-            diff *= w.obsWeight; // Lower the influence of outliers
-        }
+    if (diffs.empty()) return 0.0f;
+
+    // Unweighted mean (for outlier detection)
+    float mean =
+        std::accumulate(diffs.begin(), diffs.end(), 0.0f) / diffs.size();
+
+    float weightedSum = 0.0f;
+    float weightSum = 0.0f;
+
+    for (float diff : diffs) {
+        float weight = (std::abs(diff - mean) > largeErr) ? w.obsWeight : 1.0f;
+
+        weightedSum += diff * weight;
+        weightSum += weight;
     }
-    score = std::accumulate(diffs.begin(), diffs.end(), 0.0f);
 
-    return score;
+    return weightedSum / weightSum;
 }
 
 inline std::vector<particle> NKVD(const std::vector<particle>& particles,
                                   const particle& chassis,
                                   const sensorWeights& w,
                                   float largeErr,
-                                  float mean) {
-    std::map<particle, float> filtered;
+                                  float threshold) {
+    if (particles.empty()) return {};
+
+    std::vector<float> scores;
+    scores.reserve(particles.size());
+
+    float sum = 0.0f;
     for (const auto& p : particles) {
-        filtered[p] = getParticleScore(p, chassis, w, largeErr);
+        float s = getParticleScore(p, chassis, w, largeErr);
+        scores.push_back(s);
+        sum += s;
     }
-    float scoreMean = std::accumulate(filtered.begin(),
-                                      filtered.end(),
-                                      0.0f,
-                                      [](float sum, const auto& pair) {
-                                          return sum + pair.second;
-                                      }) /
-                      filtered.size();
-    for (auto& pair : filtered) {
-        if (std::abs(pair.second - mean) > largeErr) {
-            pair.second *= w.obsWeight;
+
+    float scoreMean = sum / scores.size();
+
+    std::vector<particle> final;
+    final.reserve(particles.size());
+    for (size_t i = 0; i < particles.size(); ++i) {
+        if (std::abs(scores[i] - scoreMean) < threshold) {
+            final.push_back(particles[i]);
         }
     }
-    return std::vector<particle>{};
+    return final;
+}
+
+inline std::vector<particle> populateParticles(
+    const std::vector<particle>& initParticles,
+    float spreadXY,    // stddev for x/y noise (same units as pose.x/y)
+    float spreadTheta, // stddev for theta noise
+    int totalParticles) {
+    std::vector<particle> finalParticles;
+    if (totalParticles <= 0 || initParticles.empty()) return finalParticles;
+
+    finalParticles.reserve(static_cast<size_t>(totalParticles));
+
+    // One RNG for the whole function
+    static thread_local std::mt19937 rng{ std::random_device{}() };
+
+    std::normal_distribution<float> nXY(0.0f, spreadXY);
+    std::normal_distribution<float> nTh(0.0f, spreadTheta);
+
+    for (int i = 0; i < totalParticles; ++i) {
+        particle p =
+            initParticles[static_cast<size_t>(i) % initParticles.size()];
+
+        p.pose.x += nXY(rng);
+        p.pose.y += nXY(rng);
+        p.pose.theta = wrapDeg(p.pose.theta + nTh(rng));
+
+        // If your theta is degrees, wrap to a stable range (optional but
+        // recommended)
+
+        finalParticles.push_back(p);
+    }
+
+    return finalParticles;
+}
+
+inline std::vector<particle> populateInitialParticles(
+    lemlib::Chassis& chassis,
+    botDistanceSensors& sensors,
+    int numParticles,
+    float linearTrust,
+    float headingTrust) {
+    std::vector<particle> particles;
+
+    // Populate particles based on the chassis state and trust levels
+    for (int i = 0; i < numParticles; ++i) {
+        particle p{ chassis.getPose() };
+        // One RNG for the whole function
+        static thread_local std::mt19937 rng{ std::random_device{}() };
+
+        std::normal_distribution<float> nXY(0.0f, linearTrust);
+        std::normal_distribution<float> nTh(0.0f, headingTrust);
+        // Add noise based on trust levels
+        p.pose.x += nXY(rng);
+        p.pose.y += nXY(rng);
+        p.pose.theta = wrapDeg(p.pose.theta + nTh(rng));
+
+        particles.push_back(p);
+    }
+    for (auto& p : particles) {
+        p.sensorData.distSenseData = buildParticleData(sensors, p.pose);
+    }
+    return particles;
 }

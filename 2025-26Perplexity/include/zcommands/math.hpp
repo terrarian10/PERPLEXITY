@@ -62,3 +62,10 @@ inline float raycast(lemlib::Pose pos, box field) {
     // Since (dx,dy) is unit length, bestT is the distance.
     return bestT;
 }
+static inline float wrapDeg(float deg) {
+    while (deg <= -180.0f)
+        deg += 360.0f;
+    while (deg > 180.0f)
+        deg -= 360.0f;
+    return deg;
+}
