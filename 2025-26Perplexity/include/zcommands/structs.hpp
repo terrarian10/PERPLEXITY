@@ -1,4 +1,5 @@
 #include "lemlib/pose.hpp"
+#include "pros/distance.hpp"
 #include <optional>
 struct distanceData {
     std::optional<float> forward1;
@@ -17,12 +18,16 @@ struct particleData {
 struct particle {
     lemlib::Pose pose;
     particleData sensorData;
+    std::optional<float> score;
 };
 
 struct simDistSensor {
     lemlib::Pose offset;
 };
-
+struct realDistSensor {
+    lemlib::Pose offset;
+    pros::Distance distance;
+};
 struct botDistanceSensors {
     std::optional<simDistSensor> forward1;
     std::optional<simDistSensor> forward2;

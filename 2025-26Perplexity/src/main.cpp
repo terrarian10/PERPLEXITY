@@ -22,8 +22,8 @@
 #include <vector>
 
 // Chassis constructor
-pros::MotorGroup left_motors({ 1, -2, -3 }, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({ 20, 19, -18 }, pros::MotorGearset::blue);
+pros::MotorGroup left_motors({ 20, -19, -18 }, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({ 8, 9, -10 }, pros::MotorGearset::blue);
 // Piggyback off of purdues hard work
 lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               &right_motors, // right motor group
@@ -53,8 +53,8 @@ pros::Rotation vertOdom(4);
 
 // Literally anything  is better than this method
 // Don't touch it it works
-pros::Motor outt_1(-17, pros::MotorGearset::blue);
-pros::Motor outt_2(-6, pros::MotorGearset::blue);
+pros::Motor outt_1(-16, pros::MotorGearset::blue);
+pros::Motor outt_2(-15, pros::MotorGearset::blue);
 std::vector<pros::Motor> test = { outt_1, outt_2 };
 // AirCylinder scoring_cylinder('h');
 std::vector<AirCylinder> intake_cylinders = { middle_scorer };
@@ -181,7 +181,8 @@ void anb() {
 }
 void pid_test() { testing_pid(); }
 
-void skills() { auton_full(false, true); }
+// void skills() { auton_full(true, true); }
+void skills() { park(); }
 
 // It looks nice
 rd::Selector selector({
@@ -416,7 +417,7 @@ void opcontrol() {
         roboHandler().tick();
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-            apb_full();
+            anr();
             return;
         }
         if (iteration % 50 == 0) {

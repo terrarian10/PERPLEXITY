@@ -5,9 +5,9 @@
 inline bool isInRoughPos(lemlib::Pose pose,
                          lemlib::Pose target,
                          lemlib::Pose tolerance) {
-    return (pose.x - target.x < tolerance.x &&
-            pose.y - target.y < tolerance.y &&
-            pose.theta - target.theta < tolerance.theta);
+    return (std::abs(pose.x - target.x) < tolerance.x &&
+            std::abs(pose.y - target.y) < tolerance.y &&
+            std::abs(pose.theta - target.theta) < tolerance.theta);
 }
 
 inline float raycast(lemlib::Pose pos, box field) {
@@ -68,4 +68,8 @@ static inline float wrapDeg(float deg) {
     while (deg > 180.0f)
         deg -= 360.0f;
     return deg;
+}
+
+inline static float vexRaycast(lemlib::Pose pos) {
+    return raycast(pos, box{ -182.88, -182.88, 182.88, 182.88 });
 }

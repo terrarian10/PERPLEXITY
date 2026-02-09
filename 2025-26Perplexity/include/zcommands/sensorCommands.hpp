@@ -4,12 +4,12 @@
 #include "pros/distance.hpp"
 #include "pros/misc.h"
 
-class setPosFromDistance : public command {
+class setPosFromDistance_c : public command {
   public:
-    explicit setPosFromDistance(pros::Distance distance,
-                                lemlib::Chassis& chassis,
-                                bool setX,
-                                float offset = 5)
+    explicit setPosFromDistance_c(pros::Distance distance,
+                                  lemlib::Chassis& chassis,
+                                  bool setX,
+                                  float offset = 5)
         : chassis(chassis)
         , distance(distance)
         , offset(offset)

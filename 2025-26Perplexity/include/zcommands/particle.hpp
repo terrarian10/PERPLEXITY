@@ -118,7 +118,7 @@ inline float getParticleScore(const particle& p,
     return weightedSum / weightSum;
 }
 
-inline std::vector<particle> NKVD(const std::vector<particle>& particles,
+inline std::vector<particle> NKVD(std::vector<particle>& particles,
                                   const particle& chassis,
                                   const sensorWeights& w,
                                   float largeErr,
@@ -129,18 +129,17 @@ inline std::vector<particle> NKVD(const std::vector<particle>& particles,
     scores.reserve(particles.size());
 
     float sum = 0.0f;
-    for (const auto& p : particles) {
-        float s = getParticleScore(p, chassis, w, largeErr);
-        scores.push_back(s);
-        sum += s;
+    for (auto& p : particles) {
+        p.score = getParticleScore(p, chassis, w, largeErr);
+        sum += *p.score;
     }
 
-    float scoreMean = sum / scores.size();
+    float scoreMean = sum / particles.size();
 
     std::vector<particle> final;
     final.reserve(particles.size());
     for (size_t i = 0; i < particles.size(); ++i) {
-        if (std::abs(scores[i] - scoreMean) < threshold) {
+        if (std::abs(*particles[i].score - scoreMean) < threshold) {
             final.push_back(particles[i]);
         }
     }
@@ -207,4 +206,22 @@ inline std::vector<particle> populateInitialParticles(
         p.sensorData.distSenseData = buildParticleData(sensors, p.pose);
     }
     return particles;
+}
+
+inline lemlib::Pose extractFromParticle(
+    const std::vector<particle>& particles) {
+
+    lemlib::Pose bestPose = { 0, 0, 0 };
+    float bestDiff = std::numeric_limits<float>::max();
+
+    for (const auto& p : particles) {
+        if (p.score) {
+            if (*p.score < bestDiff) {
+                bestDiff = *p.score;
+                bestPose = p.pose;
+            }
+        }
+    }
+
+    return bestPose;
 }
