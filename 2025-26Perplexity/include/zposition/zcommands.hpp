@@ -31,6 +31,44 @@ class tickMCL_c : public command {
         }
         std::vector<float> expectedDistances{};
         for (auto& sensor : distance) {
+            expectedDistances.emplace_back(sensor.get_distance());
+        }
+        iterateLocal(particles,
+                     simDistanceSensor,
+                     expectedDistances,
+                     chassis.getPose(),
+                     oldPose,
+                     sigma);
+
+        return true;
+    };
+
+  private:
+    lemlib::Chassis& chassis;
+    lemlib::Pose& oldPose;
+    std::vector<pros::Distance> distance;
+    float sigma;
+    std::vector<particle>& particles;
+    std::vector<lemlib::Pose> offsets;
+};
+class poseMCL_c : public command {
+  public:
+    explicit poseMCL_c(monteConfig& config, float sigma)
+        : particles(config.particles)
+        , chassis(config.chassis)
+        , oldPose(config.oldPose)
+        , distance(config.distance)
+        , offsets(config.offsets)
+        , sigma(sigma) {};
+
+    bool run() override {
+        std::vector<simDistanceSensor> simDistanceSensor{};
+        simDistanceSensor.reserve(offsets.size());
+        for (const auto& offset : offsets) {
+            simDistanceSensor.emplace_back(offset);
+        }
+        std::vector<float> expectedDistances{};
+        for (auto& sensor : distance) {
 
             expectedDistances.emplace_back(sensor.get_distance());
         }

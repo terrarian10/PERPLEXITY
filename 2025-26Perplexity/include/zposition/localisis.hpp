@@ -19,7 +19,7 @@ struct simDistanceSensor {
 inline void initalPopulate(std::vector<particle>& particles,
                            lemlib::Pose estStart) {
     particles.clear();
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 100; ++i) { // NumParticles
         particles.push_back(
             { lemlib::Pose{ randNormal(estStart.x, 6.0),
                             randNormal(estStart.y, 6.0),

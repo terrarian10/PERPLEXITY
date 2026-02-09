@@ -20,6 +20,7 @@ void ticker::command_opcontrol() {
     lemlib::Pose oldPose = chassis.getPose();
     std::vector<pros::Distance> distance{};
     std::vector<lemlib::Pose> offsets{};
+    float sigma = 2;
     monteConfig localization{ .particles = particles,
                               .chassis = chassis,
                               .oldPose = oldPose,
@@ -32,6 +33,21 @@ void ticker::command_opcontrol() {
         update_mech_state(outtake, outtake_ctrl, mainVirutal),
         update_mech(outtake),
         update_pneu(airs, pneuCtrl, mainVirutal),
-        tickMCL_c(localization, 2.0),
-        wait_c(10));
+        tickMCL_c(localization, sigma),
+        wait_c(10),
+        update_controller_c(mainVirutal, master),
+        tank_c(chassis, mainVirutal),
+        update_mech_state(outtake, outtake_ctrl, mainVirutal),
+        update_mech(outtake),
+        update_pneu(airs, pneuCtrl, mainVirutal),
+        tickMCL_c(localization, sigma),
+        wait_c(10),
+        update_controller_c(mainVirutal, master),
+        tank_c(chassis, mainVirutal),
+        update_mech_state(outtake, outtake_ctrl, mainVirutal),
+        update_mech(outtake),
+        update_pneu(airs, pneuCtrl, mainVirutal),
+        tickMCL_c(localization, sigma),
+        wait_c(10),
+        poseMCL_c(localization, sigma));
 }
