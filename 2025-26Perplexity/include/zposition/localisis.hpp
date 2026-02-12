@@ -2,6 +2,7 @@
 #include "pros/distance.hpp"
 #include "zcommands/math.hpp"
 #include "zposition/random.hpp"
+#include <iostream>
 #include <numbers>
 #include <vector>
 struct particle {
@@ -15,7 +16,7 @@ struct simDistanceSensor {
     lemlib::Pose offset;
     float distance = 0;
 };
-
+// Sets up the initial population of particles
 inline void initalPopulate(std::vector<particle>& particles,
                            lemlib::Pose estStart) {
     particles.clear();
@@ -26,18 +27,21 @@ inline void initalPopulate(std::vector<particle>& particles,
                             randNormal(estStart.theta, 6.0) } });
     }
 }
-
+// Moves particles based off bot movement
 inline void moveParticles(std::vector<particle>& particles,
                           lemlib::Pose movement) {
     for (auto& p : particles) {
+        std::cout << "PARTICLE PRE-MOVE: " << p.pos.x << " " << p.pos.y
+                  << " ROT: " << p.pos.theta << "\n";
         p.pos.x += movement.x + (randNormal(0.0, 0.05) * (movement.x + 0.5));
         p.pos.y += movement.y + (randNormal(0.0, 0.05) * (movement.y + 0.5));
+
         p.pos.theta +=
             movement.theta + (randNormal(0.0, 0.05 * movement.theta));
         p.pos.theta = wrapDeg(p.pos.theta);
     }
 }
-
+// Weights particles based off sensor readings
 inline std::vector<weightedParticle> weightParticles(
     const std::vector<particle>& particles,
     const std::vector<simDistanceSensor>& sensors,
@@ -47,6 +51,7 @@ inline std::vector<weightedParticle> weightParticles(
     std::vector<weightedParticle> ret;
     const float invSigma2 = 1.0f / (2 * sigma * sigma);
     float maxLogW = -INFINITY;
+    // Raycast each distance sensor for each particle
     for (auto& particle : particles) {
         float logw = 0;
         for (int i = 0; i < sensors.size(); i++) {
@@ -61,24 +66,30 @@ inline std::vector<weightedParticle> weightParticles(
 
     return ret;
 }
-
+// Gets the best pose based off particle weights
 inline lemlib::Pose getBestPose(
     const std::vector<weightedParticle>& particles) {
     float overallWeight = 0;
     lemlib::Pose bestPose = { 0, 0, 0 };
     float s = 0, c = 0;
     for (auto& p : particles) {
+        std::cout << "PARTICLE MOVE: " << p.p.pos.x << " " << p.p.pos.y
+                  << " ROT: " << p.p.pos.theta << "\n";
         bestPose.x += p.p.pos.x * p.weight;
+        // std::cout << "PARTICLE: " << p.p.pos.x << " " << p.p.pos.y
+        //           << " W: " << p.weight << "\n";
         bestPose.y += p.p.pos.y * p.weight;
-        s += std::sin(p.p.pos.theta * (std::numbers::pi / 180)) * p.weight;
-        c += std::cos(p.p.pos.theta * (std::numbers::pi / 180)) * p.weight;
+        // s += std::sin(wrapDeg(p.p.pos.theta) * (std::numbers::pi / 180)) *
+        //      p.weight;
+        // c += std::cos(wrapDeg(p.p.pos.theta) * (std::numbers::pi / 180)) *
+        //      p.weight;
         overallWeight += p.weight;
     }
     if (overallWeight < 1e-12f) return particles[0].p.pos;
 
     bestPose.x /= overallWeight;
     bestPose.y /= overallWeight;
-    bestPose.theta = std::atan2(s, c) * (180 / std::numbers::pi);
+    // bestPose.theta = wrapDeg(std::atan2(s, c) * (180 / std::numbers::pi));
     return bestPose;
 }
 inline void normalizeWeights(std::vector<weightedParticle>& wps) {
@@ -142,11 +153,11 @@ inline lemlib::Pose iterateLocal(std::vector<particle>& particles,
                                  lemlib::Pose chassisPose,
                                  lemlib::Pose oldChassisPose,
                                  float sigma) {
-    moveParticles(particles, chassisPose - oldChassisPose);
+    // moveParticles(particles, chassisPose - oldChassisPose);
     std::vector<weightedParticle> weightedParticles = weightParticles(
         particles, sensors, chassisPose, expectedDistances, sigma);
     lemlib::Pose bestPose = getBestPose(weightedParticles);
-    particles =
-        resampleParticles(weightedParticles, particles.size(), 1.0, 2.0);
+    /*particles =
+        resampleParticles(weightedParticles, particles.size(), 1.0, 2.0);*/
     return bestPose;
 }
