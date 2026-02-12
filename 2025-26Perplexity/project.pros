@@ -467,7 +467,8 @@
     "upload_options": {
       "after": "run",
       "description": "A pseudo-API for automating VEX processes",
-      "icon": "X"
+      "icon": "X",
+      "slot": 2
     },
     "use_early_access": false
   }

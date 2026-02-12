@@ -36,20 +36,20 @@ bool isRed;
 pros::Optical optical(30);
 ColourDetector colorDetector(optical);
 // Initialize the Scraper
-AirCylinder scraper('b', false);
-AirCylinder middle_scorer('a', false);
+AirCylinder scraper('h', false);
+AirCylinder middle_scorer('c', false);
 ticker& roboHandler() {
     static ticker bot; // one persistent instance
     return bot;
 } // Make attacher wirj
 // AirCylinder attacher('g');
 // Doubleparrk
-AirCylinder descorer_l('c');
+AirCylinder descorer_l('a');
 
-pros::IMU imu(10);
+pros::IMU imu(14);
 // pros::Rotation horizOdom(9);
 //  pros::Rotation horizOdom2(4);
-pros::Rotation vertOdom(4);
+pros::Rotation vertOdom(17);
 
 // Literally anything  is better than this method
 // Don't touch it it works
@@ -80,7 +80,7 @@ Outtake outtake(test,
                 12000);
 
 // lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2, -1.5);
-lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, -1.125);
+lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, 0);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(

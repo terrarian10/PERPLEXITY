@@ -33,7 +33,8 @@ inline void moveParticles(std::vector<particle>& particles,
         p.pos.x += movement.x + (randNormal(0.0, 0.05) * (movement.x + 0.5));
         p.pos.y += movement.y + (randNormal(0.0, 0.05) * (movement.y + 0.5));
         p.pos.theta +=
-            movement.theta + (randNormal(0.0, 0.05) * (movement.theta + 0.5));
+            movement.theta + (randNormal(0.0, 0.05 * movement.theta));
+        p.pos.theta = wrapDeg(p.pos.theta);
     }
 }
 
@@ -45,14 +46,16 @@ inline std::vector<weightedParticle> weightParticles(
     float sigma) {
     std::vector<weightedParticle> ret;
     const float invSigma2 = 1.0f / (2 * sigma * sigma);
+    float maxLogW = -INFINITY;
     for (auto& particle : particles) {
         float logw = 0;
         for (int i = 0; i < sensors.size(); i++) {
             float e = (vexRaycast(particle.pos + sensors[i].offset) -
                        expectedDistances[i]);
             logw += -(e * e) * invSigma2;
+            maxLogW = std::max(maxLogW, logw);
         }
-        float w = std::exp(logw);
+        float w = std::exp(logw - maxLogW);
         ret.push_back({ particle, w });
     }
 
@@ -132,7 +135,6 @@ inline std::vector<particle> resampleParticles(
 
     return out;
 }
-// Hole shise its globl localization
 // Cant wait to watch this fail
 inline lemlib::Pose iterateLocal(std::vector<particle>& particles,
                                  std::vector<simDistanceSensor>& sensors,

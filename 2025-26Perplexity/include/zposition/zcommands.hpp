@@ -3,14 +3,15 @@
 #include "lemlib/pose.hpp"
 #include "pros/distance.hpp"
 #include "zposition/localisis.hpp"
+#include <iterator>
 #include <vector>
 
 struct monteConfig {
     std::vector<particle>& particles;
     lemlib::Chassis& chassis;
     lemlib::Pose& oldPose;
-    std::vector<pros::Distance>& distance;
-    std::vector<lemlib::Pose>& offsets;
+    std::array<pros::Distance, 4>& distance;
+    std::vector<simDistanceSensor>& offsets;
 };
 
 class tickMCL_c : public command {
@@ -24,21 +25,26 @@ class tickMCL_c : public command {
         , sigma(sigma) {};
 
     bool run() override {
-        std::vector<simDistanceSensor> simDistanceSensor{};
-        simDistanceSensor.reserve(offsets.size());
-        for (const auto& offset : offsets) {
-            simDistanceSensor.emplace_back(offset);
-        }
+
         std::vector<float> expectedDistances{};
+        std::vector<simDistanceSensor> validOffsets{};
+        int i = 0;
         for (auto& sensor : distance) {
-            expectedDistances.emplace_back(sensor.get_distance());
+            if (sensor.get_distance() == errno) {
+                continue;
+            } else {
+                expectedDistances.emplace_back(sensor.get_distance());
+                validOffsets.emplace_back(offsets.at(i));
+            }
+            i++;
         }
         iterateLocal(particles,
-                     simDistanceSensor,
+                     validOffsets,
                      expectedDistances,
                      chassis.getPose(),
                      oldPose,
                      sigma);
+        oldPose = chassis.getPose();
 
         return true;
     };
@@ -46,10 +52,10 @@ class tickMCL_c : public command {
   private:
     lemlib::Chassis& chassis;
     lemlib::Pose& oldPose;
-    std::vector<pros::Distance> distance;
+    std::array<pros::Distance, 4>& distance;
     float sigma;
     std::vector<particle>& particles;
-    std::vector<lemlib::Pose> offsets;
+    std::vector<simDistanceSensor>& offsets;
 };
 class poseMCL_c : public command {
   public:
@@ -62,34 +68,39 @@ class poseMCL_c : public command {
         , sigma(sigma) {};
 
     bool run() override {
-        std::vector<simDistanceSensor> simDistanceSensor{};
-        simDistanceSensor.reserve(offsets.size());
-        for (const auto& offset : offsets) {
-            simDistanceSensor.emplace_back(offset);
-        }
-        std::vector<float> expectedDistances{};
-        for (auto& sensor : distance) {
 
-            expectedDistances.emplace_back(sensor.get_distance());
+        std::vector<float> expectedDistances{};
+        std::vector<simDistanceSensor> validOffsets{};
+        int i = 0;
+        for (auto& sensor : distance) {
+            if (sensor.get_distance() == errno) {
+                continue;
+            } else {
+                expectedDistances.emplace_back(sensor.get_distance());
+                validOffsets.emplace_back(offsets.at(i));
+            }
+            i++;
         }
         lemlib::Pose newPose = iterateLocal(particles,
-                                            simDistanceSensor,
+                                            validOffsets,
                                             expectedDistances,
                                             chassis.getPose(),
                                             oldPose,
                                             sigma);
         chassis.setPose(newPose);
         oldPose = newPose;
+        std::cout << newPose.x << " " << newPose.y << " " << newPose.theta
+                  << std::endl;
         return true;
     };
 
   private:
     lemlib::Chassis& chassis;
     lemlib::Pose& oldPose;
-    std::vector<pros::Distance> distance;
+    std::array<pros::Distance, 4>& distance;
     float sigma;
     std::vector<particle>& particles;
-    std::vector<lemlib::Pose> offsets;
+    std::vector<simDistanceSensor>& offsets;
 };
 
 class populateMCL_c : public command {
@@ -99,7 +110,12 @@ class populateMCL_c : public command {
         , start(estStart) {};
 
     bool run() override {
+
         initalPopulate(particles, start);
+        std::cout << "Populated MCL with " << particles.size() << " particles"
+                  << particles.at(0).pos.x << " " << particles.at(0).pos.y
+                  << " " << particles.at(0).pos.theta << std::endl;
+
         return true;
     };
 

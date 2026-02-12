@@ -1103,7 +1103,7 @@ void auton_skills() {
         chassis,
         mx,
         my,
-        poseCFG{ .minSpeed = 90, .timeout = 1200 });
+        swingCFG{ .minSpeed = 90, .timeout = 1200 });
     autonSchedule.enqueue<movepose_c>(
         lemlib::Pose{ 90, 50, 90 },
         chassis,
