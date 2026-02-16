@@ -18,18 +18,20 @@ void ticker::command_opcontrol() {
         pros::E_CONTROLLER_DIGITAL_Y, pros::E_CONTROLLER_DIGITAL_RIGHT
     };
     static std::vector<particle> particles{};
+
+    chassis.setPose({ -111.8, 38_cm, 0 });
     static lemlib::Pose oldPose = chassis.getPose();
-    chassis.setPose({ -100, -100, 0 });
+
     static std::array<pros::Distance, 4> distance = { pros::Distance(11),
                                                       pros::Distance(13),
                                                       pros::Distance(6),
                                                       pros::Distance(1) };
 
     static std::vector<simDistanceSensor> offsets{
-        { lemlib::Pose{ -9.8, 18.5, 0 }, 0 },
-        { lemlib::Pose(-13.5, 11.45, -90), 0 },
-        { lemlib::Pose{ 11.5, -12, 180 }, 0 },
-        { lemlib::Pose(13.5, 11.45, 90), 0 },
+        { lemlib::Pose{ 3, 7.125, 0 }, 0 },
+        { lemlib::Pose(-13.5_cm, 11.45_cm, -90), 0 },
+        { lemlib::Pose{ 11.5_cm, -12_cm, 180 }, 0 },
+        { lemlib::Pose(13.5_cm, 11.45_cm, 90), 0 },
     };
     float sigma = 2;
     static monteConfig localization{ .particles = particles,
@@ -37,8 +39,13 @@ void ticker::command_opcontrol() {
                                      .oldPose = oldPose,
                                      .distance = distance,
                                      .offsets = offsets };
-    botScheduler().enqueue<populateMCL_c>(localization,
-                                          lemlib::Pose{ -100, -100, 0 });
+
+    botScheduler().enqueue<populateMCL_c>(localization, chassis.getPose());
+
+    // botScheduler().enqueue<poseMCL_c>(localization, sigma);
+    std::cout << "INITIAL POSE: " << chassis.getPose().x << " "
+              << chassis.getPose().y << " " << chassis.getPose().theta
+              << std::endl;
     // botScheduler().enqueue<populateMCL_c>(localization, chassis.getPose());
     botScheduler().enqueue<group_repeat_cmd>(
         update_controller_c(mainVirutal, master),
@@ -46,20 +53,20 @@ void ticker::command_opcontrol() {
         update_mech_state(outtake, outtake_ctrl, mainVirutal),
         update_mech(outtake),
         update_pneu(airs, pneuCtrl, mainVirutal),
-        tickMCL_c(localization, sigma),
+        // tickMCL_c(localization, sigma),
         wait_c(10),
         update_controller_c(mainVirutal, master),
         tank_c(chassis, mainVirutal),
         update_mech_state(outtake, outtake_ctrl, mainVirutal),
         update_mech(outtake),
         update_pneu(airs, pneuCtrl, mainVirutal),
-        tickMCL_c(localization, sigma),
+        // tickMCL_c(localization, sigma),
         wait_c(10),
         update_controller_c(mainVirutal, master),
         tank_c(chassis, mainVirutal),
         update_mech_state(outtake, outtake_ctrl, mainVirutal),
         update_mech(outtake),
         update_pneu(airs, pneuCtrl, mainVirutal),
-        poseMCL_c(localization, sigma),
+        // poseMCL_c(localization, sigma),
         wait_c(10));
 }

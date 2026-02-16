@@ -2,7 +2,9 @@
 #include "lemlib/chassis/chassis.hpp"
 #include "lemlib/pose.hpp"
 #include "pros/distance.hpp"
+#include "pros/optical.h"
 #include "zposition/localisis.hpp"
+#include <iostream>
 #include <iterator>
 #include <vector>
 
@@ -30,7 +32,9 @@ class tickMCL_c : public command {
         std::vector<simDistanceSensor> validOffsets{};
         int i = 0;
         for (auto& sensor : distance) {
-            if (sensor.get_distance() == errno) {
+            if (sensor.get_distance() == PROS_ERR ||
+                sensor.get_distance() == 9999 ||
+                sensor.get_distance() == errno) {
                 continue;
             } else {
                 expectedDistances.emplace_back(sensor.get_distance());
@@ -73,7 +77,9 @@ class poseMCL_c : public command {
         std::vector<simDistanceSensor> validOffsets{};
         int i = 0;
         for (auto& sensor : distance) {
-            if (sensor.get_distance() == errno) {
+            if (sensor.get_distance() == PROS_ERR ||
+                sensor.get_distance() == 9999 ||
+                sensor.get_distance() == errno) {
                 continue;
             } else {
                 expectedDistances.emplace_back(sensor.get_distance());
@@ -81,6 +87,7 @@ class poseMCL_c : public command {
             }
             i++;
         }
+
         lemlib::Pose newPose = iterateLocal(particles,
                                             validOffsets,
                                             expectedDistances,
@@ -89,8 +96,7 @@ class poseMCL_c : public command {
                                             sigma);
         chassis.setPose(newPose);
         oldPose = newPose;
-        std::cout << newPose.x << " " << newPose.y << " " << newPose.theta
-                  << std::endl;
+
         return true;
     };
 
@@ -111,7 +117,7 @@ class populateMCL_c : public command {
 
     bool run() override {
 
-        initalPopulate(particles, start);
+        initalPopulate(particles, start, 6);
         std::cout << "Populated MCL with " << particles.size() << " particles"
                   << particles.at(0).pos.x << " " << particles.at(0).pos.y
                   << " " << particles.at(0).pos.theta << std::endl;

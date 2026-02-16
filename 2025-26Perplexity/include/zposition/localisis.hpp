@@ -18,21 +18,26 @@ struct simDistanceSensor {
 };
 // Sets up the initial population of particles
 inline void initalPopulate(std::vector<particle>& particles,
-                           lemlib::Pose estStart) {
+                           lemlib::Pose estStart,
+                           float stddev) {
     particles.clear();
-    for (int i = 0; i < 100; ++i) { // NumParticles
+    for (int i = 0; i < 300; ++i) { // NumParticles
         particles.push_back(
-            { lemlib::Pose{ randNormal(estStart.x, 6.0),
-                            randNormal(estStart.y, 6.0),
-                            randNormal(estStart.theta, 6.0) } });
+            { lemlib::Pose{ randNormal(estStart.x, stddev),
+                            randNormal(estStart.y, stddev),
+                            randNormal(estStart.theta, stddev) } });
     }
 }
 // Moves particles based off bot movement
 inline void moveParticles(std::vector<particle>& particles,
                           lemlib::Pose movement) {
     for (auto& p : particles) {
-        std::cout << "PARTICLE PRE-MOVE: " << p.pos.x << " " << p.pos.y
-                  << " ROT: " << p.pos.theta << "\n";
+        // std::cout << "PARTICLE PRE-MOVE: " << p.pos.x << " " << p.pos.y
+        //           << " ROT: " << p.pos.theta << "\n";
+        // std::cout << movement.x << " " << movement.y << "\n";
+
+        // std::cout << "RAND " << (randNormal(0.0, 0.05) * (movement.y + 0.5))
+        //           << "\n";
         p.pos.x += movement.x + (randNormal(0.0, 0.05) * (movement.x + 0.5));
         p.pos.y += movement.y + (randNormal(0.0, 0.05) * (movement.y + 0.5));
 
@@ -73,8 +78,8 @@ inline lemlib::Pose getBestPose(
     lemlib::Pose bestPose = { 0, 0, 0 };
     float s = 0, c = 0;
     for (auto& p : particles) {
-        std::cout << "PARTICLE MOVE: " << p.p.pos.x << " " << p.p.pos.y
-                  << " ROT: " << p.p.pos.theta << "\n";
+        // std::cout << "PARTICLE MOVE: " << p.p.pos.x << " " << p.p.pos.y
+        //           << " ROT: " << p.p.pos.theta << "\n";
         bestPose.x += p.p.pos.x * p.weight;
         // std::cout << "PARTICLE: " << p.p.pos.x << " " << p.p.pos.y
         //           << " W: " << p.weight << "\n";
@@ -153,11 +158,12 @@ inline lemlib::Pose iterateLocal(std::vector<particle>& particles,
                                  lemlib::Pose chassisPose,
                                  lemlib::Pose oldChassisPose,
                                  float sigma) {
-    // moveParticles(particles, chassisPose - oldChassisPose);
+
+    moveParticles(particles, chassisPose - oldChassisPose);
     std::vector<weightedParticle> weightedParticles = weightParticles(
         particles, sensors, chassisPose, expectedDistances, sigma);
     lemlib::Pose bestPose = getBestPose(weightedParticles);
-    /*particles =
-        resampleParticles(weightedParticles, particles.size(), 1.0, 2.0);*/
+    particles =
+        resampleParticles(weightedParticles, particles.size(), 1.0, 2.0);
     return bestPose;
 }

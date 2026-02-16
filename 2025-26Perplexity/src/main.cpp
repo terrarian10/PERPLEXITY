@@ -182,7 +182,7 @@ void anb() {
 void pid_test() { testing_pid(); }
 
 // void skills() { auton_full(true, true); }
-void skills() { park(); }
+void skills() { auton_skills(); }
 
 // It looks nice
 rd::Selector selector({
@@ -404,8 +404,8 @@ void opcontrol() {
 
     displayHandler.updateDisplay(
         macros[displayHandler.get_active_address() - 1]);
-
-    // Set Brake Mode
+    // chassis.setPose(0, 0, 0); // REMOVE THIS LATER PLEASE
+    //  Set Brake Mode
     pros::motor_brake_mode_e_t driver_preference_brake =
         pros::E_MOTOR_BRAKE_COAST;
     roboHandler().command_opcontrol();
@@ -417,22 +417,24 @@ void opcontrol() {
         roboHandler().tick();
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-            anr();
+            auton_skills();
             return;
         }
-        if (iteration % 50 == 0) {
-            std::cout << "Outtake Motor Efficiency: " << outt_1.get_efficiency()
+        if (iteration % 10 == 0) {
+
+            // std::cout << "Outtake Motor TEMP: " << outt_1.get_temperature()
+            //           << std::endl;
+            // std::cout << "Motors Left - Drive "
+            //           << left_motors.get_temperature(0) << " "
+            //           << left_motors.get_temperature(1) << " "
+            //           << left_motors.get_temperature(2) << std::endl;
+            // std::cout << "Motors Right - Drive "
+            //           << right_motors.get_temperature(0) << " "
+            //           << right_motors.get_temperature(1) << " "
+            //           << right_motors.get_temperature(2) << std::endl;
+            std::cout << "POSE: " << chassis.getPose().x << " "
+                      << chassis.getPose().y << " " << chassis.getPose().theta
                       << std::endl;
-            std::cout << "Outtake Motor TEMP: " << outt_1.get_temperature()
-                      << std::endl;
-            std::cout << "Motors Left - Drive "
-                      << left_motors.get_temperature(0) << " "
-                      << left_motors.get_temperature(1) << " "
-                      << left_motors.get_temperature(2) << std::endl;
-            std::cout << "Motors Right - Drive "
-                      << right_motors.get_temperature(0) << " "
-                      << right_motors.get_temperature(1) << " "
-                      << right_motors.get_temperature(2) << std::endl;
         }
 
         iteration++;

@@ -1030,12 +1030,12 @@ void auton_skills() {
     // chassis.setPose(mx * 124_cm, my * -48_cm, adjustHeading(90, mx, my));
     autonSchedule.enqueue<setPose_c>(lemlib::Pose{
         mx * float(-160_cm), my * float(-40_cm), adjustHeading(0, mx, my) });
-    autonSchedule.enqueue<movepose_c>(
-        lemlib::Pose{ -160, -60, 0 },
-        chassis,
-        mx,
-        my,
-        poseCFG{ .reversed = true, .minSpeed = 105, .timeout = 300 });
+    // autonSchedule.enqueue<movepose_c>(
+    //     lemlib::Pose{ -160, -60, 0 },
+    //     chassis,
+    //     mx,
+    //     my,
+    //     poseCFG{ .reversed = true, .minSpeed = 105, .timeout = 300 });
     autonSchedule.enqueue<mech_state_c>(OUT_HOARD, outtake);
     autonSchedule.enqueue<movepose_c>(
         lemlib::Pose{ -160, 45, 0 },
