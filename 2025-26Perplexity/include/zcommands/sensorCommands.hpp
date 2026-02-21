@@ -47,3 +47,36 @@ class setPosFromDistance_c : public command {
     float offset;
     bool setX;
 };
+class setY_dist_c : public command {
+  public:
+    explicit setY_dist_c(pros::Distance distance,
+                         lemlib::Chassis& chassis,
+                         bool isTop,
+                         float offset = 7.125)
+        : chassis(chassis)
+        , distance(distance)
+        , offset(offset)
+        , isTop(isTop) {}
+    bool run() override {
+
+        if (!isTop) {
+            chassis.setPose(chassis.getPose().x,
+                            -(70 - (distance.get() / 25.4 - offset)),
+                            chassis.getPose().theta);
+        } else {
+            chassis.setPose(chassis.getPose().x,
+                            (70 - (distance.get() / 25.4 - offset)),
+                            chassis.getPose().theta);
+        }
+
+        return true;
+    }
+    void quit() override {}
+    void force_quit() override {}
+
+  private:
+    pros::Distance distance;
+    lemlib::Chassis& chassis;
+    float offset;
+    bool isTop;
+};

@@ -1,6 +1,8 @@
+#pragma once
 #include "consts.hpp"
 #include "lemlib/pose.hpp"
 #include <cmath>
+#include <iostream>
 #include <vector>
 inline bool isInRoughPos(lemlib::Pose pose,
                          lemlib::Pose target,
@@ -72,4 +74,12 @@ static inline float wrapDeg(float deg) {
 
 inline static float vexRaycast(lemlib::Pose pos) {
     return raycast(pos, box{ -182.88, -182.88, 182.88, 182.88 });
+}
+
+inline lemlib::Pose relativeMove(double distance, lemlib::Pose chassisPose) {
+    std::cerr << "in function\v";
+
+    return lemlib::Pose(chassisPose.x + distance * std::sin(chassisPose.theta),
+                        chassisPose.y + distance * std::cos(chassisPose.theta),
+                        chassisPose.theta);
 }

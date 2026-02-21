@@ -42,13 +42,14 @@ class tickMCL_c : public command {
             }
             i++;
         }
+        lemlib::Pose odomNow = chassis.getPose();
         iterateLocal(particles,
                      validOffsets,
                      expectedDistances,
-                     chassis.getPose(),
+                     odomNow,
                      oldPose,
                      sigma);
-        oldPose = chassis.getPose();
+        oldPose = odomNow;
 
         return true;
     };
@@ -75,17 +76,11 @@ class poseMCL_c : public command {
 
         std::vector<float> expectedDistances{};
         std::vector<simDistanceSensor> validOffsets{};
-        int i = 0;
-        for (auto& sensor : distance) {
-            if (sensor.get_distance() == PROS_ERR ||
-                sensor.get_distance() == 9999 ||
-                sensor.get_distance() == errno) {
-                continue;
-            } else {
-                expectedDistances.emplace_back(sensor.get_distance());
-                validOffsets.emplace_back(offsets.at(i));
-            }
-            i++;
+        for (int i = 0; i < distance.size(); i++) {
+            auto d = distance[i].get_distance();
+            if (d == PROS_ERR || d == 9999 || d == errno) continue;
+            expectedDistances.push_back(d);
+            validOffsets.push_back(offsets.at(i));
         }
 
         lemlib::Pose newPose = iterateLocal(particles,
@@ -95,7 +90,6 @@ class poseMCL_c : public command {
                                             oldPose,
                                             sigma);
         chassis.setPose(newPose);
-        oldPose = newPose;
 
         return true;
     };

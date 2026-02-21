@@ -212,8 +212,10 @@ class Scheduler {
         schedule.pop_front();
     }
     void move_to_front() {
+        if (schedule.empty()) return;
+        schedule.back()->force_quit();
+
         schedule.emplace_front(std::move(schedule.back()));
-        schedule.back()->quit();
 
         schedule.pop_back();
     }

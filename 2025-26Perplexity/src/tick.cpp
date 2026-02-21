@@ -6,7 +6,7 @@
 #include "main.h"
 #include "pros/distance.hpp"
 #include "pros/misc.h"
-#include "zcommands/chassisCommands.hpp"
+#include "zcommands/macroCommands.hpp"
 #include "zcommands/mechCommands.hpp"
 #include "zcommands/virtualCommands.hpp"
 #include "zposition/zcommands.hpp"
@@ -53,20 +53,25 @@ void ticker::command_opcontrol() {
         update_mech_state(outtake, outtake_ctrl, mainVirutal),
         update_mech(outtake),
         update_pneu(airs, pneuCtrl, mainVirutal),
+        descore_macro(mainVirutal,
+                      pros::E_CONTROLLER_DIGITAL_LEFT,
+                      chassis,
+                      botScheduler()),
         // tickMCL_c(localization, sigma),
-        wait_c(10),
-        update_controller_c(mainVirutal, master),
-        tank_c(chassis, mainVirutal),
-        update_mech_state(outtake, outtake_ctrl, mainVirutal),
-        update_mech(outtake),
-        update_pneu(airs, pneuCtrl, mainVirutal),
-        // tickMCL_c(localization, sigma),
-        wait_c(10),
-        update_controller_c(mainVirutal, master),
-        tank_c(chassis, mainVirutal),
-        update_mech_state(outtake, outtake_ctrl, mainVirutal),
-        update_mech(outtake),
-        update_pneu(airs, pneuCtrl, mainVirutal),
-        // poseMCL_c(localization, sigma),
-        wait_c(10));
+        wait_c(10)
+        // update_controller_c(mainVirutal, master),
+        // tank_c(chassis, mainVirutal),
+        // update_mech_state(outtake, outtake_ctrl, mainVirutal),
+        // update_mech(outtake),
+        // update_pneu(airs, pneuCtrl, mainVirutal),
+        // // tickMCL_c(localization, sigma),
+        // wait_c(10),
+        // update_controller_c(mainVirutal, master),
+        // tank_c(chassis, mainVirutal),
+        // update_mech_state(outtake, outtake_ctrl, mainVirutal),
+        // update_mech(outtake),
+        // update_pneu(airs, pneuCtrl, mainVirutal),
+        // // poseMCL_c(localization, sigma),
+        // wait_c(10)
+    );
 }

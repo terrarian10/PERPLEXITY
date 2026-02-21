@@ -45,11 +45,12 @@ ticker& roboHandler() {
 // AirCylinder attacher('g');
 // Doubleparrk
 AirCylinder descorer_l('a');
-
+pros::GPS gps(10, 0, 0);
 pros::IMU imu(14);
+
 // pros::Rotation horizOdom(9);
 //  pros::Rotation horizOdom2(4);
-pros::Rotation vertOdom(17);
+pros::Rotation vertOdom(-17);
 
 // Literally anything  is better than this method
 // Don't touch it it works
@@ -61,7 +62,7 @@ std::vector<AirCylinder> intake_cylinders = { middle_scorer };
 mecha_control outtake_ctrl = {
     { { { { 0, 1 }, { 1, 1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R1 },
-      { { { 0, 1 }, { 1, -0.5, 1 }, { -1, 0 } },
+      { { { 0, 1 }, { 1, -0, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L1 },
       { { { 0, -1 }, { 1, -1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L2 },
@@ -108,9 +109,9 @@ lemlib::OdomSensors nan_sensor(
 // Guess and check final boss
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(
-    28,  // proportional gain (kP) - 15 55 60 65 70 75 80
+    34,  // proportional gain (kP) - 28
     0,   // integral gain (kI)
-    9,   // derivative gain (kD) -- 9 32 32 33 34 36
+    10,  // derivative gain (kD) -- 9
     3,   //-48.375, // anti windup3
     1,   // small error range, in inches1
     100, // small error range timeout, in milliseconds100
@@ -122,12 +123,12 @@ lemlib::ControllerSettings lateral_controller(
 lemlib::ControllerSettings angular_controller(
     4.1, // kP – start here again or even 3
     0,   // kI – keep off for now
-    26,  // kD – moderate, not 400
+    28,  // kD – moderate, not 400
     3,   // 3 anti windup (does nothing until you use I, but fine)
     1,   // 1 small error range (deg)
     100, // 100 small error timeout (ms)
     3,   // 3 large error range (deg)
-    500, // 300 large error timeout (ms)
+    300, // 300 large error timeout (ms)
     0    // 40 slew – limit acceleration so it doesn't slam
 );
 
@@ -417,21 +418,21 @@ void opcontrol() {
         roboHandler().tick();
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-            auton_skills();
+            skills();
             return;
         }
-        if (iteration % 10 == 0) {
+        if (iteration % 50 == 0) {
 
-            // std::cout << "Outtake Motor TEMP: " << outt_1.get_temperature()
-            //           << std::endl;
-            // std::cout << "Motors Left - Drive "
-            //           << left_motors.get_temperature(0) << " "
-            //           << left_motors.get_temperature(1) << " "
-            //           << left_motors.get_temperature(2) << std::endl;
-            // std::cout << "Motors Right - Drive "
-            //           << right_motors.get_temperature(0) << " "
-            //           << right_motors.get_temperature(1) << " "
-            //           << right_motors.get_temperature(2) << std::endl;
+            std::cout << "Outtake Motor TEMP: " << outt_1.get_temperature()
+                      << std::endl;
+            std::cout << "Motors Left - Drive "
+                      << left_motors.get_temperature(0) << " "
+                      << left_motors.get_temperature(1) << " "
+                      << left_motors.get_temperature(2) << std::endl;
+            std::cout << "Motors Right - Drive "
+                      << right_motors.get_temperature(0) << " "
+                      << right_motors.get_temperature(1) << " "
+                      << right_motors.get_temperature(2) << std::endl;
             std::cout << "POSE: " << chassis.getPose().x << " "
                       << chassis.getPose().y << " " << chassis.getPose().theta
                       << std::endl;
