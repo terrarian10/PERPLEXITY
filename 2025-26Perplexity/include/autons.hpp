@@ -32,7 +32,7 @@ extern lemlib::Chassis chassis;
 void park();
 void auton_full(bool isBlue, bool doSkills);
 void auto_bottomGoal(bool isBlue);
-
+void halfAuto(bool isBlue);
 void autons_positive_red();
 void autons_positive_blue();
 void autons_negative_red();
@@ -40,3 +40,4 @@ void autons_negative_blue();
 void auton_one_side(float mx, float my, bool doSkills = false);
 void testing_pid();
 void auton_skills();
+void quarterAuto(bool isBlue);

@@ -62,11 +62,11 @@ std::vector<AirCylinder> intake_cylinders = { middle_scorer };
 mecha_control outtake_ctrl = {
     { { { { 0, 1 }, { 1, 1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R1 },
-      { { { 0, 1 }, { 1, -0, 1 }, { -1, 0 } },
+      { { { 0, 1 }, { 1, -0.5, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L1 },
       { { { 0, -1 }, { 1, -1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L2 },
-      { { { 0, 1 }, { 1, 1, 1 }, { -1, 1 } },
+      { { { 0, 0.8 }, { 1, 0.7, 1 }, { -1, 1 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R2 },
       { { { 0, 0 }, { 1, 0, 1 }, { -1, -1 } } } },
     "Outtake"
@@ -158,11 +158,15 @@ ModularControl displayHandler(chassis,
  */
 void apr() {
     isRed = true;
-    auton_one_side(-1, 1);
+    quarterAuto(false);
 }
 void anr() {
     isRed = true;
     auto_bottomGoal(false);
+}
+void apr_full() {
+    isRed = true;
+    halfAuto(false);
 }
 void anr_full() {
     isRed = true;
@@ -172,13 +176,17 @@ void apb_full() {
     isRed = false;
     auton_full(true, false);
 }
+void anb_full() {
+    isRed = false;
+    halfAuto(true);
+}
 void apb() {
     isRed = false;
     auto_bottomGoal(true);
 }
 void anb() {
     isRed = false;
-    auton_one_side(1, -1);
+    quarterAuto(true);
 }
 void pid_test() { testing_pid(); }
 
@@ -189,14 +197,16 @@ void skills() { auton_skills(); }
 rd::Selector selector({
     { "autons_positive_blue_full", apb_full },
     { "autons_negative_red_full", anr_full },
-    { "autons_positive_red", apr },
+    { "sawp_blue_midgoal", anb_full },
+    { "sawp_red_midgoal", apr_full },
+    { "quarter_mid_red", apr },
 
     { "autons_negative_red", anr },
 
     { "auton_skills", skills },
     { "autons_positive_blue", apb },
 
-    { "autons_negative_blue", anb },
+    { "quarter_mid_blue", anb },
 });
 void initialize_macros() {
     std::cout << outtake_ctrl.motorHandling.at(4).control;
