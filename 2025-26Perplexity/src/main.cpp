@@ -4,7 +4,6 @@
 #include "autons.hpp"
 #include "color_sort.hpp"
 #include "consts.hpp"
-#include "controller_data.hpp"
 #include "lemlib/chassis/chassis.hpp"
 #include "lemlib/chassis/trackingWheel.hpp"
 #include "pros/abstract_motor.hpp"
@@ -139,16 +138,8 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                         sensors             // odometry sensors
 );
 
-std::vector<ModularControl::macro> macros;
-
 // Create Controller
 pros::Controller master(pros::E_CONTROLLER_MASTER);
-
-ModularControl displayHandler(chassis,
-                              master,
-                              outtake,
-                              1); // His name is displayHandler. Please respect
-                                  // displayHandler
 
 /**                                                                            \
  * Runs initialization code. This occurs as soon as the program is started.    \
@@ -168,14 +159,7 @@ void apr_full() {
     isRed = true;
     halfAuto(false);
 }
-void anr_full() {
-    isRed = true;
-    auton_full(false, false);
-}
-void apb_full() {
-    isRed = false;
-    auton_full(true, false);
-}
+
 void anb_full() {
     isRed = false;
     halfAuto(true);
@@ -195,32 +179,16 @@ void skills() { auton_skills(); }
 
 // It looks nice
 rd::Selector selector({
-    { "autons_positive_blue_full", apb_full },
-    { "autons_negative_red_full", anr_full },
     { "sawp_blue_midgoal", anb_full },
     { "sawp_red_midgoal", apr_full },
     { "quarter_mid_red", apr },
-
     { "autons_negative_red", anr },
-
     { "auton_skills", skills },
     { "autons_positive_blue", apb },
-
     { "quarter_mid_blue", anb },
 });
 void initialize_macros() {
     std::cout << outtake_ctrl.motorHandling.at(4).control;
-    macros.reserve(2);
-    macros.push_back({ { { -157, -118.9, 270, true },
-                         { -157, 118.9, 270, true },
-                         { 157, 118.9, 90, false },
-                         { 157, -118.9, 90, false } },
-                       "MATCHLOAD" });
-    macros.push_back({ { { -157, -118.9, 270, true },
-                         { -157, 118.9, 270, true },
-                         { 157, 118.9, 90, false },
-                         { 157, -118.9, 90, false } },
-                       "TEST" });
 }
 // Make sure bot is ready
 void initialize() {
@@ -310,111 +278,8 @@ namespace pros {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-bool canUpdateMacros;
-
-void displayUpdater(int iteration) {
-    if (std::abs(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) > 115) {
-        if (canUpdateMacros) {
-            displayHandler.incrementAddress(
-                std::abs(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) /
-                master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X));
-            if (displayHandler.get_active_address() < 1) {
-                displayHandler.incrementAddress(
-                    macros.size() + (displayHandler.get_active_address() * -1));
-            } else if (displayHandler.get_active_address() > macros.size()) {
-                displayHandler.incrementAddress(
-                    (displayHandler.get_active_address() * -1) + 1);
-            }
-            displayHandler.updateDisplay(
-                macros[displayHandler.get_active_address() - 1]);
-            canUpdateMacros = false;
-        }
-    } else {
-        canUpdateMacros = true;
-    }
-    if (iteration % 10 == 0) { master.clear(); }
-    if (iteration % 5 == 0) {
-        displayHandler.updateDisplay(
-            macros[displayHandler.get_active_address() - 1]);
-    }
-}
-
-void runMacros() {
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
-        displayHandler.activateMacro(
-            macros[displayHandler.get_active_address() - 1], isRed);
-    }
-}
-
-void driveControl() {
-    //  Get how far the joysticks are moved
-    int leftY = (master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
-    int rightY = (master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
-    // make it TENK
-    chassis.tank(leftY, rightY);
-}
-
-void handleEjection() {
-    if (colorDetector.get_color() == colorDetector.RED &&
-        outtake.get_state() != Outt_States::OFF) {
-        outtake.emergency(350, { { 1, -1 }, { 1, 1 }, { 1, 1 } });
-    }
-}
-
-// void handleOuttakeCont() {
-//     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
-//         if (outtake.get_state() == Outt_States::BOTTOM) {
-//             outtake.run_at_state(Outt_States::OFF);
-//         } else {
-//             outtake.run_at_state(Outt_States::BOTTOM);
-//         }
-//     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
-//         if (outtake.get_state() == Outt_States::TOP) {
-//             outtake.run_at_state(Outt_States::OFF);
-//         } else {
-//             outtake.run_at_state(Outt_States::TOP);
-//             outtake.emergency(120, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
-//         }
-//     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
-//         if (outtake.get_state() == Outt_States::MIDDLE) {
-//             outtake.run_at_state(Outt_States::OFF);
-//         } else {
-//             outtake.run_at_state(Outt_States::MIDDLE);
-//             outtake.emergency(120, { { 0, -1 }, { 1, 0 }, { -1, -1 } });
-//         }
-//     } else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-//         if (outtake.get_state() == Outt_States::HOARD) {
-//             outtake.run_at_state(Outt_States::OFF);
-//         } else {
-//             outtake.run_at_state(Outt_States::HOARD);
-//         }
-//     }
-
-//     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-//         outtake.emergency(50, { { 0, 1 }, { 1, 1 }, { -1, -1 } });
-//     }
-//     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
-//         outtake.emergency(150, { { 0, -1 }, { 1, -1 }, { -1, -1 } });
-//     }
-// }
-
-void handleControls() {
-    // handleOuttakeCont();
-    //  Toggle funny scrapers
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-        scraper.toggle();
-    }
-
-    // "Double-Park-Thingy" as I was told
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
-        descorer_l.toggle();
-    }
-}
 
 void opcontrol() {
-
-    displayHandler.updateDisplay(
-        macros[displayHandler.get_active_address() - 1]);
     // chassis.setPose(0, 0, 0); // REMOVE THIS LATER PLEASE
     //  Set Brake Mode
     pros::motor_brake_mode_e_t driver_preference_brake =
