@@ -61,11 +61,11 @@ std::vector<AirCylinder> intake_cylinders = { middle_scorer };
 mecha_control outtake_ctrl = {
     { { { { 0, 1 }, { 1, 1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R1 },
-      { { { 0, 1 }, { 1, -0.5, 1 }, { -1, 0 } },
+      { { { 0, 1 }, { 1, -0.35, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L1 },
       { { { 0, -1 }, { 1, -1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L2 },
-      { { { 0, 0.8 }, { 1, 0.7, 1 }, { -1, 1 } },
+      { { { 0, 0.8 }, { 1, 0.75, 1 }, { -1, 1 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R2 },
       { { { 0, 0 }, { 1, 0, 1 }, { -1, -1 } } } },
     "Outtake"
@@ -153,7 +153,7 @@ void apr() {
 }
 void anr() {
     isRed = true;
-    auto_bottomGoal(false);
+    lowGoal_auto(false);
 }
 void apr_full() {
     isRed = true;
@@ -166,7 +166,7 @@ void anb_full() {
 }
 void apb() {
     isRed = false;
-    auto_bottomGoal(true);
+    lowGoal_auto(true);
 }
 void anb() {
     isRed = false;
