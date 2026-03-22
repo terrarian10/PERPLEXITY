@@ -36,3 +36,4 @@ void testing_pid();
 void auton_skills();
 void quarterAuto(bool isBlue);
 void lowGoal_auto(bool isBlue);
+void mvfwd();

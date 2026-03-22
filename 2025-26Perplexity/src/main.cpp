@@ -164,6 +164,10 @@ void anb_full() {
     isRed = false;
     halfAuto(true);
 }
+void mvfwrd() {
+    isRed = false;
+    mvfwd();
+}
 void apb() {
     isRed = false;
     lowGoal_auto(true);
@@ -186,6 +190,8 @@ rd::Selector selector({
     { "auton_skills", skills },
     { "autons_positive_blue", apb },
     { "quarter_mid_blue", anb },
+    { "forward", mvfwrd },
+
 });
 void initialize_macros() {
     std::cout << outtake_ctrl.motorHandling.at(4).control;
@@ -293,7 +299,7 @@ void opcontrol() {
         roboHandler().tick();
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-            skills();
+            anb();
             return;
         }
         if (iteration % 50 == 0) {
@@ -304,7 +310,7 @@ void opcontrol() {
                       << left_motors.get_temperature(0) << " "
                       << left_motors.get_temperature(1) << " "
                       << left_motors.get_temperature(2) << std::endl;
-            std::cout << "Motors Right - Drive "
+            std::cout << "Motors Right - Dri,ve "
                       << right_motors.get_temperature(0) << " "
                       << right_motors.get_temperature(1) << " "
                       << right_motors.get_temperature(2) << std::endl;
