@@ -1,0 +1,18 @@
+CompileFlags:
+  Compiler: /home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/bin/arm-none-eabi-g++
+  Add:
+    - -isystem
+    - /home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/arm-none-eabi/include/c++/14.3.1
+    - -isystem
+    - /home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/arm-none-eabi/include/c++/14.3.1/arm-none-eabi
+    - -isystem
+    - /home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/arm-none-eabi/include/c++/14.3.1/backward
+    - -isystem
+    - /home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/lib/gcc/arm-none-eabi/14.3.1/include
+    - -isystem
+    - /home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/lib/gcc/arm-none-eabi/14.3.1/include-fixed
+    - -isystem
+    - /home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/arm-none-eabi/include
+
+QueryDriver:
+  - /home/corruptsive/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/bin/arm-none-eabi-*

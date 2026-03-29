@@ -299,7 +299,7 @@ void opcontrol() {
         roboHandler().tick();
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-            anb();
+            selector.run_auton();
             return;
         }
         if (iteration % 50 == 0) {

@@ -40,7 +40,7 @@ void ticker::command_opcontrol() {
                                      .distance = distance,
                                      .offsets = offsets };
 
-    //botScheduler().enqueue<populateMCL_c>(localization, chassis.getPose());
+    // botScheduler().enqueue<populateMCL_c>(localization, chassis.getPose());
 
     // botScheduler().enqueue<poseMCL_c>(localization, sigma);
     std::cout << "INITIAL POSE: " << chassis.getPose().x << " "
@@ -53,25 +53,12 @@ void ticker::command_opcontrol() {
         update_mech_state(outtake, outtake_ctrl, mainVirutal),
         update_mech(outtake),
         update_pneu(airs, pneuCtrl, mainVirutal),
-        // descore_macro(mainVirutal,
-        //               pros::E_CONTROLLER_DIGITAL_LEFT,
-        //               chassis,
-        //               botScheduler()),
-        //tickMCL_c(localization, sigma),
+        descore_macro(mainVirutal,
+                      pros::E_CONTROLLER_DIGITAL_LEFT,
+                      chassis,
+                      botScheduler()),
+        // tickMCL_c(localization, sigma),
         wait_c(10)
-        // update_controller_c(mainVirutal, master),
-        // tank_c(chassis, mainVirutal),
-        // update_mech_state(outtake, outtake_ctrl, mainVirutal),
-        // update_mech(outtake),
-        // update_pneu(airs, pneuCtrl, mainVirutal),
-        // // tickMCL_c(localization, sigma),
-        // wait_c(10),
-        // update_controller_c(mainVirutal, master),
-        // tank_c(chassis, mainVirutal),
-        // update_mech_state(outtake, outtake_ctrl, mainVirutal),
-        // update_mech(outtake),
-        // update_pneu(airs, pneuCtrl, mainVirutal),
-        // // poseMCL_c(localization, sigma),
-        // wait_c(10)
+
     );
 }

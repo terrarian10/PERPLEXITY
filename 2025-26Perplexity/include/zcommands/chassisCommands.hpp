@@ -191,14 +191,12 @@ class movepose_c : public command {
     bool run() override {
         if (!started) {
             h = pose.theta;
-            // Mirror across Y-axis (left ↔ right)
-            if (mx != -1) {
+            if (mx > 0) {
                 h = std::fmod(360.0 - h, 360.0);
                 if (h < 0) h += 360.0;
             }
 
-            // Mirror across X-axis (top ↔ bottom)
-            if (my != +1) {
+            if (my < 0) {
                 h = std::fmod(180.0 - h, 360.0);
                 if (h < 0) h += 360.0;
             }
@@ -236,6 +234,51 @@ class movepose_c : public command {
     float mx;
     float my;
     float h;
+};
+class true_movepose_c : public command {
+  public:
+    explicit true_movepose_c(lemlib::Pose pose,
+                             lemlib::Chassis& chassis,
+
+                             poseCFG config = { false, 0, 127, 5000 })
+        : chassis(chassis)
+        , pose(pose)
+        , config(config)
+        , started(false) {};
+    bool run() override {
+        if (!started) {
+
+            chassis.moveToPose(pose.x / 2.54,
+                               pose.y / 2.54,
+                               pose.theta,
+                               config.timeout,
+                               {
+                                   .forwards = !config.reversed,
+                                   .horizontalDrift = 8,
+                                   .maxSpeed = float(config.maxSpeed),
+
+                                   .minSpeed = float(config.minSpeed),
+                                   .earlyExitRange = config.earlyExitRange,
+
+                               });
+            started = true;
+            std::cout << "GOAL X: " << pose.x << " Y: " << pose.y
+                      << "ROT:" << pose.theta << "\n";
+
+            return false;
+        }
+        return !chassis.isInMotion();
+        // std::cout << chassis.getPose().x << " " << chassis.getPose().y
+        //           << "--POSITION" << "\n";
+    }
+
+    void force_quit() override { chassis.cancelMotion(); }
+
+  private:
+    lemlib::Chassis& chassis;
+    lemlib::Pose pose;
+    poseCFG config;
+    bool started;
 };
 class turn_heading_c : public command {
   public:
@@ -323,6 +366,49 @@ class swing_heading_c : public command {
     int dir;
     int mx;
     int my;
+    lemlib::DriveSide lockedSide;
+    swingCFG config;
+    bool started;
+};
+class true_swing_heading_c : public command {
+  public:
+    explicit true_swing_heading_c(
+        int dir,
+        lemlib::DriveSide lockedSide,
+        lemlib::Chassis& chassis,
+
+        swingCFG config = { 127, 0, 5000, 1, lemlib::AngularDirection::AUTO })
+        : chassis(chassis)
+        , dir(dir)
+
+        , lockedSide(lockedSide)
+        , config(config)
+        , started(false) {};
+    bool run() override {
+
+        if (!started) {
+            chassis.swingToHeading(
+                dir,
+                lockedSide,
+                config.timeout,
+                { .direction = config.dirPath,
+                  .maxSpeed = static_cast<float>(config.maxSpeed),
+                  .minSpeed = static_cast<float>(config.minSpeed),
+                  .earlyExitRange = config.earlyExitRange });
+            started = true;
+            return false;
+        }
+        return !chassis.isInMotion();
+        // std::cout << chassis.getPose().x << " " << chassis.getPose().y
+        //           << "--POSITION" << "\n";
+    }
+
+    void force_quit() override { chassis.cancelMotion(); }
+
+  private:
+    lemlib::Chassis& chassis;
+    int dir;
+
     lemlib::DriveSide lockedSide;
     swingCFG config;
     bool started;

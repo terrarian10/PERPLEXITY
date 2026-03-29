@@ -3,6 +3,7 @@
 #include "lemlib/pose.hpp"
 #include <cmath>
 #include <iostream>
+#include <numbers>
 #include <vector>
 inline bool isInRoughPos(lemlib::Pose pose,
                          lemlib::Pose target,
@@ -78,8 +79,9 @@ inline static float vexRaycast(lemlib::Pose pos) {
 
 inline lemlib::Pose relativeMove(double distance, lemlib::Pose chassisPose) {
     std::cerr << "in function\v";
-
-    return lemlib::Pose(chassisPose.x + distance * std::sin(chassisPose.theta),
-                        chassisPose.y + distance * std::cos(chassisPose.theta),
-                        chassisPose.theta);
+    float rad = std::numbers::pi / 180;
+    return lemlib::Pose(
+        chassisPose.x * 2.54 + distance * std::sin(chassisPose.theta * rad),
+        chassisPose.y * 2.54 + distance * std::cos(chassisPose.theta * rad),
+        chassisPose.theta);
 }
