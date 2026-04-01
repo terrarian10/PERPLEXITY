@@ -34,7 +34,17 @@ class descore_macro : public command {
             scheduler.move_to_front();
             scheduler.move_to_front();
         }
+        command* current = scheduler.get_current();
 
+        if ((dynamic_cast<true_movepose_c*>(current) ||
+             dynamic_cast<true_swing_heading_c*>(current)) ||
+            dynamic_cast<true_turnheading_c*>(current) &&
+                (std::any_of(
+                    vc.joysticks.begin(),
+                    vc.joysticks.end(),
+                    [](const auto& pair) { return pair.second > 50; }))) {
+            scheduler.force_quit_current();
+        }
         return true;
     };
 

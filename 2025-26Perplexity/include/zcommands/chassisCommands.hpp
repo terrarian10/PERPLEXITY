@@ -376,7 +376,6 @@ class true_swing_heading_c : public command {
         int dir,
         lemlib::DriveSide lockedSide,
         lemlib::Chassis& chassis,
-
         swingCFG config = { 127, 0, 5000, 1, lemlib::AngularDirection::AUTO })
         : chassis(chassis)
         , dir(dir)
@@ -398,6 +397,7 @@ class true_swing_heading_c : public command {
             started = true;
             return false;
         }
+
         return !chassis.isInMotion();
         // std::cout << chassis.getPose().x << " " << chassis.getPose().y
         //           << "--POSITION" << "\n";
@@ -465,4 +465,38 @@ class turnheading_c : public command {
     bool started;
     float mx;
     float my;
+};
+class true_turnheading_c : public command {
+  public:
+    explicit true_turnheading_c(int dir,
+                                lemlib::Chassis& chassis,
+                                poseCFG config = { false, 40, 127, 5000 })
+        : chassis(chassis)
+        , dir(dir)
+
+        , config(config)
+        , started(false) {};
+    bool run() override {
+        if (!started) {
+
+            chassis.turnToHeading(dir,
+                                  config.timeout,
+                                  {
+                                      .maxSpeed = config.maxSpeed,
+                                      .minSpeed = config.minSpeed,
+                                      .earlyExitRange = config.earlyExitRange,
+                                  });
+            started = true;
+            return false;
+        }
+        return !chassis.isInMotion();
+    }
+
+    void force_quit() override { chassis.cancelMotion(); }
+
+  private:
+    lemlib::Chassis& chassis;
+    int dir;
+    poseCFG config;
+    bool started;
 };

@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
+#include <memory>
 #include <vector>
 
 class command {
@@ -196,6 +197,7 @@ class Scheduler {
         }
         return !schedule.empty();
     };
+    auto get_current() { return schedule.front().get(); }
 
     void move_to_back() {
         if (schedule.empty()) return;
