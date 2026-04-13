@@ -7,7 +7,6 @@
 #include "pros/distance.hpp"
 #include "pros/misc.h"
 #include "zcommands/macroCommands.hpp"
-#include "zcommands/mechCommands.hpp"
 #include "zcommands/virtualCommands.hpp"
 #include "zposition/zcommands.hpp"
 #include <vector>
@@ -56,6 +55,7 @@ void ticker::command_opcontrol() {
         descore_macro(mainVirutal,
                       pros::E_CONTROLLER_DIGITAL_LEFT,
                       chassis,
+                      descorer_l,
                       botScheduler()),
         // tickMCL_c(localization, sigma),
         wait_c(10)

@@ -3,6 +3,8 @@
 #include "lemlib/pose.hpp"
 #include "main.h"
 #include "pros/misc.h"
+#include "pros/motor_group.hpp"
+#include "zcommands/math.hpp"
 struct point {
     float x;
     float y;
@@ -20,8 +22,9 @@ class tank_c : public command {
         : chassis(chassis)
         , vc(vc) {};
     bool run() override {
-        chassis.tank(vc.get_joystick(pros::E_CONTROLLER_ANALOG_LEFT_Y),
-                     vc.get_joystick(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
+        chassis.tank(
+            (vc.get_joystick(pros::E_CONTROLLER_ANALOG_LEFT_Y) * 0.9),
+            (vc.get_joystick(pros::E_CONTROLLER_ANALOG_RIGHT_Y) * 0.9));
 
         return true;
     };
@@ -235,22 +238,22 @@ class movepose_c : public command {
     float my;
     float h;
 };
-class true_movepose_c : public command {
+class rel_movepose_c : public command {
   public:
-    explicit true_movepose_c(lemlib::Pose pose,
-                             lemlib::Chassis& chassis,
+    explicit rel_movepose_c(float distance,
+                            lemlib::Chassis& chassis,
 
-                             poseCFG config = { false, 0, 127, 5000 })
+                            poseCFG config = { false, 0, 127, 5000 })
         : chassis(chassis)
-        , pose(pose)
         , config(config)
+        , distance(distance)
         , started(false) {};
     bool run() override {
         if (!started) {
-
-            chassis.moveToPose(pose.x / 2.54,
-                               pose.y / 2.54,
-                               pose.theta,
+            lemlib::Pose target = relativeMove(distance, chassis.getPose());
+            chassis.moveToPose(target.x / 2.54,
+                               target.y / 2.54,
+                               target.theta,
                                config.timeout,
                                {
                                    .forwards = !config.reversed,
@@ -262,8 +265,6 @@ class true_movepose_c : public command {
 
                                });
             started = true;
-            std::cout << "GOAL X: " << pose.x << " Y: " << pose.y
-                      << "ROT:" << pose.theta << "\n";
 
             return false;
         }
@@ -276,7 +277,7 @@ class true_movepose_c : public command {
 
   private:
     lemlib::Chassis& chassis;
-    lemlib::Pose pose;
+    float distance;
     poseCFG config;
     bool started;
 };
@@ -370,9 +371,33 @@ class swing_heading_c : public command {
     swingCFG config;
     bool started;
 };
-class true_swing_heading_c : public command {
+class direct_dt_c : public command {
   public:
-    explicit true_swing_heading_c(
+    explicit direct_dt_c(int motorSpeedLeft,
+                         int motorSpeedRight,
+                         pros::MotorGroup& left,
+                         pros::MotorGroup& right)
+        : motorSpeedLeft(motorSpeedLeft)
+        , motorSpeedRight(motorSpeedRight)
+        , left(left)
+        , right(right) {};
+    bool run() override {
+        left.move(motorSpeedLeft);
+        right.move(motorSpeedRight);
+        return true;
+        // std::cout << chassis.getPose().x << " " << chassis.getPose().y
+        //           << "--POSITION" << "\n";
+    }
+
+  private:
+    int motorSpeedLeft;
+    int motorSpeedRight;
+    pros::MotorGroup& left;
+    pros::MotorGroup& right;
+};
+class rel_swing_heading_c : public command {
+  public:
+    explicit rel_swing_heading_c(
         int dir,
         lemlib::DriveSide lockedSide,
         lemlib::Chassis& chassis,
@@ -384,7 +409,10 @@ class true_swing_heading_c : public command {
         , config(config)
         , started(false) {};
     bool run() override {
-
+        dir += chassis.getPose().theta;
+        while (dir >= 360) {
+            dir -= 360;
+        }
         if (!started) {
             chassis.swingToHeading(
                 dir,
@@ -466,11 +494,11 @@ class turnheading_c : public command {
     float mx;
     float my;
 };
-class true_turnheading_c : public command {
+class rel_turnheading_c : public command {
   public:
-    explicit true_turnheading_c(int dir,
-                                lemlib::Chassis& chassis,
-                                poseCFG config = { false, 40, 127, 5000 })
+    explicit rel_turnheading_c(int dir,
+                               lemlib::Chassis& chassis,
+                               poseCFG config = { false, 40, 127, 5000 })
         : chassis(chassis)
         , dir(dir)
 
@@ -478,6 +506,8 @@ class true_turnheading_c : public command {
         , started(false) {};
     bool run() override {
         if (!started) {
+            dir += chassis.getPose().theta;
+            if (360 > dir) { dir -= 360; }
 
             chassis.turnToHeading(dir,
                                   config.timeout,

@@ -21,40 +21,35 @@
 #include <vector>
 
 // Chassis constructor
-pros::MotorGroup left_motors({ 20, -19, -18 }, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({ 8, 9, -10 }, pros::MotorGearset::blue);
+pros::MotorGroup left_motors({ -11, 12, -20 }, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({ 1, -2, 10 }, pros::MotorGearset::blue);
 // Piggyback off of purdues hard work
 lemlib::Drivetrain drivetrain(&left_motors,  // left motor group
                               &right_motors, // right motor group
                               11.25,         // 10 inch track width // 13.82?
                               lemlib::Omniwheel::NEW_325,
-                              360, // drivetrain rpm is 360
+                              450, // drivetrain rpm is 360
                               8    // horizontal drift is 2 (for now)
 );
 bool isRed;
 pros::Optical optical(30);
 ColourDetector colorDetector(optical);
 // Initialize the Scraper
-AirCylinder scraper('h', false);
-AirCylinder middle_scorer('c', false);
+AirCylinder scraper('c', false);
+AirCylinder middle_scorer('h', false);
 ticker& roboHandler() {
     static ticker bot; // one persistent instance
     return bot;
-} // Make attacher wirj
-// AirCylinder attacher('g');
-// Doubleparrk
+}
 AirCylinder descorer_l('a');
-pros::GPS gps(10, 0, 0);
 pros::IMU imu(14);
 
-// pros::Rotation horizOdom(9);
-//  pros::Rotation horizOdom2(4);
-pros::Rotation vertOdom(-17);
+pros::Rotation vertOdom(4);
 
 // Literally anything  is better than this method
 // Don't touch it it works
-pros::Motor outt_1(-16, pros::MotorGearset::blue);
-pros::Motor outt_2(-15, pros::MotorGearset::blue);
+pros::Motor outt_1(13, pros::MotorGearset::blue);
+pros::Motor outt_2(-3, pros::MotorGearset::blue);
 std::vector<pros::Motor> test = { outt_1, outt_2 };
 // AirCylinder scoring_cylinder('h');
 std::vector<AirCylinder> intake_cylinders = { middle_scorer };
@@ -63,7 +58,7 @@ mecha_control outtake_ctrl = {
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R1 },
       { { { 0, 1 }, { 1, -0.35, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L1 },
-      { { { 0, -1 }, { 1, -1, 1 }, { -1, 0 } },
+      { { { 0, -1 }, { 1, 1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L2 },
       { { { 0, 0.8 }, { 1, 0.75, 1 }, { -1, 1 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R2 },
@@ -80,7 +75,7 @@ Outtake outtake(test,
                 12000);
 
 // lemlib::TrackingWheel horizontal(&horizOdom, lemlib::Omniwheel::NEW_2, -1.5);
-lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, 0);
+lemlib::TrackingWheel vertical(&vertOdom, lemlib::Omniwheel::NEW_2, -3);
 
 // The sensors are imaginary
 lemlib::OdomSensors sensors(
@@ -108,27 +103,27 @@ lemlib::OdomSensors nan_sensor(
 // Guess and check final boss
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(
-    34,  // proportional gain (kP) - 28
-    0,   // integral gain (kI)
-    10,  // derivative gain (kD) -- 9
-    3,   //-48.375, // anti windup3
-    1,   // small error range, in inches1
-    100, // small error range timeout, in milliseconds100
-    3,   // large error range, in inches3
-    500, // large error range timeout, in milliseconds500
-    20   // maximum acceleration (slew)0
+    21,   // proportional gain (kP) - 28
+    0,    // integral gain (kI)
+    19.5, // derivative gain (kD) -- 9
+    3,    //-48.375, // anti windup3
+    1,    // small error range, in inches1
+    100,  // small error range timeout, in milliseconds100
+    3,    // large error range, in inches3
+    500,  // large error range timeout, in milliseconds500
+    0     // maximum acceleration (slew)0
 );
 
 lemlib::ControllerSettings angular_controller(
-    4.1, // kP – start here again or even 3
-    0,   // kI – keep off for now
-    28,  // kD – moderate, not 400
-    3,   // 3 anti windup (does nothing until you use I, but fine)
-    1,   // 1 small error range (deg)
-    100, // 100 small error timeout (ms)
-    3,   // 3 large error range (deg)
-    300, // 300 large error timeout (ms)
-    0    // 40 slew – limit acceleration so it doesn't slam
+    4.75, // kP – start here again or even 4.1
+    0,    // kI – keep off for now
+    26,   // kD – moderate, not 28
+    3,    // 3 anti windup (does nothing until you use I, but fine)
+    1,    // 1 small error range (deg)
+    100,  // 100 small error timeout (ms)
+    3,    // 3 large error range (deg)
+    300,  // 300 large error timeout (ms)
+    40    // 40 slew – limit acceleration so it doesn't slam
 );
 
 // create the chassis
@@ -150,6 +145,14 @@ pros::Controller master(pros::E_CONTROLLER_MASTER);
 void apr() {
     isRed = true;
     quarterAuto(false);
+}
+void aprLong() {
+    isRed = true;
+    longGoal(false, left_motors, right_motors);
+}
+void anbLong() {
+    isRed = true;
+    longGoal(true, left_motors, right_motors);
 }
 void anr() {
     isRed = true;
@@ -299,7 +302,7 @@ void opcontrol() {
         roboHandler().tick();
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-            selector.run_auton();
+            apb();
             return;
         }
         if (iteration % 50 == 0) {

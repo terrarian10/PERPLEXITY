@@ -31,7 +31,7 @@ extern lemlib::Chassis chassis;
 
 void auto_bottomGoal(bool isBlue);
 void halfAuto(bool isBlue);
-
+void longGoal(bool isBlue, pros::MotorGroup& left, pros::MotorGroup& right);
 void testing_pid();
 void auton_skills();
 void quarterAuto(bool isBlue);
