@@ -56,11 +56,11 @@ std::vector<AirCylinder> intake_cylinders = { middle_scorer };
 mecha_control outtake_ctrl = {
     { { { { 0, 1 }, { 1, 1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R1 },
-      { { { 0, 1 }, { 1, -0.35, 1 }, { -1, 0 } },
+      { { { 0, 1 }, { 1, -0.5, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L1 },
-      { { { 0, -1 }, { 1, 1, 1 }, { -1, 0 } },
+      { { { 0, -1 }, { 1, -1, 1 }, { -1, 0 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_L2 },
-      { { { 0, 0.8 }, { 1, 0.75, 1 }, { -1, 1 } },
+      { { { 0, 0.75 }, { 1, -1, 1 }, { -1, 1 } },
         pros::controller_digital_e_t::E_CONTROLLER_DIGITAL_R2 },
       { { { 0, 0 }, { 1, 0, 1 }, { -1, -1 } } } },
     "Outtake"
@@ -189,9 +189,9 @@ rd::Selector selector({
     { "sawp_blue_midgoal", anb_full },
     { "sawp_red_midgoal", apr_full },
     { "quarter_mid_red", apr },
-    { "autons_negative_red", anr },
+    { "lowgoal_red", anr },
     { "auton_skills", skills },
-    { "autons_positive_blue", apb },
+    { "lowgoal_blue", apb },
     { "quarter_mid_blue", anb },
     { "forward", mvfwrd },
 
@@ -293,7 +293,7 @@ void opcontrol() {
     //  Set Brake Mode
     pros::motor_brake_mode_e_t driver_preference_brake =
         pros::E_MOTOR_BRAKE_COAST;
-    roboHandler().command_opcontrol();
+    roboHandler().command_opcontrol(left_motors, right_motors);
     chassis.setBrakeMode(driver_preference_brake);
 
     int iteration = 0;
@@ -302,7 +302,7 @@ void opcontrol() {
         roboHandler().tick();
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) &&
             master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-            apb();
+            apr();
             return;
         }
         if (iteration % 50 == 0) {

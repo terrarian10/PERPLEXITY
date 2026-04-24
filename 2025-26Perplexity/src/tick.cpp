@@ -6,12 +6,14 @@
 #include "main.h"
 #include "pros/distance.hpp"
 #include "pros/misc.h"
+#include "pros/motor_group.hpp"
 #include "zcommands/macroCommands.hpp"
 #include "zcommands/virtualCommands.hpp"
 #include "zposition/zcommands.hpp"
 #include <vector>
 void ticker::tick() { botScheduler().tick(); }
-void ticker::command_opcontrol() {
+void ticker::command_opcontrol(pros::MotorGroup& left,
+                               pros::MotorGroup& right) {
     std::vector<AirCylinder*> airs = { &descorer_l, &scraper };
     std::vector<pros::controller_digital_e_t> pneuCtrl = {
         pros::E_CONTROLLER_DIGITAL_Y, pros::E_CONTROLLER_DIGITAL_RIGHT
@@ -51,12 +53,25 @@ void ticker::command_opcontrol() {
         tank_c(chassis, mainVirutal),
         update_mech_state(outtake, outtake_ctrl, mainVirutal),
         update_mech(outtake),
-        update_pneu(airs, pneuCtrl, mainVirutal),
+        update_pneu(airs, pneuCtrl, mainVirutal), // DESCOREMACROGROUP1
         descore_macro(mainVirutal,
-                      pros::E_CONTROLLER_DIGITAL_LEFT,
-                      chassis,
+                      pros::E_CONTROLLER_DIGITAL_UP,
+                      left,
+                      right,
                       descorer_l,
                       botScheduler()),
+        descore_macro_2(mainVirutal,
+                        pros::E_CONTROLLER_DIGITAL_LEFT,
+                        left,
+                        right,
+                        descorer_l,
+                        botScheduler()),
+        descore_macro_3(mainVirutal,
+                        pros::E_CONTROLLER_DIGITAL_DOWN,
+                        left,
+                        right,
+                        descorer_l,
+                        botScheduler()),
         // tickMCL_c(localization, sigma),
         wait_c(10)
 

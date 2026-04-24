@@ -22,9 +22,8 @@ class tank_c : public command {
         : chassis(chassis)
         , vc(vc) {};
     bool run() override {
-        chassis.tank(
-            (vc.get_joystick(pros::E_CONTROLLER_ANALOG_LEFT_Y) * 0.9),
-            (vc.get_joystick(pros::E_CONTROLLER_ANALOG_RIGHT_Y) * 0.9));
+        chassis.tank((vc.get_joystick(pros::E_CONTROLLER_ANALOG_LEFT_Y) * 1),
+                     (vc.get_joystick(pros::E_CONTROLLER_ANALOG_RIGHT_Y) * 1));
 
         return true;
     };
